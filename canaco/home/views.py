@@ -37,8 +37,8 @@ def crud_categorias(request):
 def crud_comentarios(request):
     return render(request, 'home/crud_comentarios.html')
 
-def crud_noticas(request):
-    return render(request, 'home/crud_noticas.html')
+def crud_noticias(request):
+    return render(request, 'home/crud_noticias.html')
 
 def crud_perfil(request):
     return render(request, 'home/crud_perfil.html')
