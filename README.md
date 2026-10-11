@@ -13,11 +13,18 @@ conaco/
 │   │   └── home/      # Una plantilla por página (index, login, perfil, CRUDs…)
 │   ├── urls.py        # Rutas de la app
 │   └── views.py       # Vistas
-├── static/            # CSS, JS, imágenes y fuentes de la plantilla
+├── static/            # Plantilla ZenBlog (css/main.css, js/, vendor/, img/) y css/canaco.css
 ├── manage.py
 ├── requirements.txt
 └── README.md
 ```
+
+## Plantilla
+
+El diseño usa [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-template/) de BootstrapMade (Bootstrap 5.3). La licencia gratuita pide conservar el crédito "Diseñado por BootstrapMade" en el footer.
+
+- `static/css/main.css`: estilos de la plantilla (colores y fuentes al inicio del archivo, en `:root`).
+- `static/css/canaco.css`: estilos propios del proyecto (panel, perfil, login y registro).
 
 ## Avance por laboratorio
 

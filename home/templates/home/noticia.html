@@ -2,88 +2,154 @@
 {% load static %}
 {% block title %}Titulo de la noticia{% endblock %}
 {% block content %}
-<section class="section">
-    <div class="container">
-            <div class="alert alert-categoria alert-dismissible fade show" role="alert">
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-            </div>
-        <div class="row blog-entries">
-            <div class="col-md-12 col-lg-8 main-content">
-                <h1 class="mb-4">Titulo de la noticia</h1>
-                <img src="{% static 'images/hero_1.jpg' %}" alt="" class="img-fluid rounded mb-4 publication-cover-image" style="max-height: 500px; width: 100%; object-fit: cover; object-position: center;">
-                <div class="post-meta mb-4">
-                    <span>Fecha</span>
-                    <span>&nbsp;-&nbsp;Categoría</span>
-                    <span>&nbsp;-&nbsp;Visitas: 4 </span>
-                </div>
-                <h3>Resumen de la noticia</h3>
-                <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas
-                    y archivos de texto. Lorem Ipsum ha sido el texto de relleno
-                    estándar de las industrias desde el año 1500</p>
-                <h3>Noticia</h3>
-                <div class="post-content-body">
-                    Al contrario del pensamiento popular, el texto de Lorem Ipsum no es simplemente texto aleatorio.
-                    Tiene sus raices en una pieza cl´sica de la literatura del Latin,
-                    que data del año 45 antes de Cristo, haciendo que este adquiera mas de 2000 años de antiguedad.
-                    Richard McClintock, un profesor de Latin de la Universidad de Hampden-Sydney en Virginia,
-                    encontró una de las palabras más oscuras de la lengua del latín, "consecteur",
-                    en un pasaje de Lorem Ipsum, y al seguir leyendo distintos textos del latín,
-                    descubrió la fuente indudable. Lorem Ipsum viene de
-                </div>
 
-                <h3 class="mt-5">Galería</h3>
-                <div class="row my-4">
-                    <div class="col-md-4 mb-4">
-                        <img src="{% static 'images/hero_2.jpg' %}" alt="Galería" class="img-fluid rounded publication-gallery-image" style="height: 250px; width: 100%; object-fit: cover; object-position: center;">
-                    </div>
-                    <div class="col-12"><p>Sin imágenes en galería.</p></div>
-                </div>
+<div class="page-title">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Noticia</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{% url 'home:index' %}">Inicio</a></li>
+                <li><a href="{% url 'home:categoria' %}">Categoría</a></li>
+                <li class="current">Titulo de la noticia</li>
+            </ol>
+        </nav>
+    </div>
+</div>
 
-                <div class="pt-4 comment-wrap">
-                    <h3 class="mb-4">Comentarios</h3>
-                    <div class="border-bottom pb-3 mb-3">
-                        <strong>Usuario Alfredos</strong>
-                        <span class="text-muted">fecha</span>
-                        <p class="mb-0">me gusto la noticia</p>
-                    </div>
-                    <p>No hay comentarios aprobados todavía.</p>
+<div class="container">
+    <div class="row">
 
-                    <form method="POST" class="mt-4">
-                        <div class="mb-3">
-                            <label for="contenido" class="form-label">Agregar comentario</label>
-                            <textarea name="contenido" id="contenido" rows="4" class="form-control" required></textarea>
+        <div class="col-lg-8">
+
+            <!-- Detalle de la noticia -->
+            <section id="blog-details" class="blog-details section">
+                <div class="container">
+                    <article class="article">
+
+                        <div class="post-img">
+                            <img src="{% static 'img/blog/blog-1.jpg' %}" alt="" class="img-fluid publication-cover-image" style="max-height: 500px; width: 100%;">
                         </div>
-                        <button type="submit" class="btn btn-primary">Agregar comentario</button>
-                    </form>
-                    <a href="{% url 'home:login' %}" class="btn btn-primary mt-3">Inicia sesión para comentar</a>
-                </div>
-            </div>
 
-            <div class="col-md-12 col-lg-4 sidebar">
-                <div class="sidebar-box">
-                    <h3 class="heading">Otras noticias</h3>
-                    <div class="post-entry-sidebar">
-                        <ul>
-                            <li>
-                                <a href="{% url 'home:noticia' %}">
-                                    <img src="{% static 'images/hero_2.jpg' %}" alt="titulo" class="me-4 rounded sidebar-post-image" style="width: 70px; height: 70px; object-fit: cover; object-position: center;">
-                                    <div class="text">
-                                        <h4>Titulo</h4>
-                                        <div class="post-meta"><span></span></div>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
+                        <h2 class="title">Titulo de la noticia</h2>
+
+                        <div class="meta-top">
+                            <ul>
+                                <li class="d-flex align-items-center"><i class="bi bi-person"></i> <span>Autor</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <span>Fecha</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-folder2"></i> <span>Categoría</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-eye"></i> <span>Visitas: 4</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="content">
+                            <blockquote>
+                                <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500</p>
+                            </blockquote>
+
+                            <div class="post-content-body">
+                                <p>Al contrario del pensamiento popular, el texto de Lorem Ipsum no es simplemente texto aleatorio.
+                                    Tiene sus raices en una pieza clásica de la literatura del Latin, que data del año 45 antes de Cristo,
+                                    haciendo que este adquiera mas de 2000 años de antiguedad.</p>
+                                <p>Richard McClintock, un profesor de Latin de la Universidad de Hampden-Sydney en Virginia,
+                                    encontró una de las palabras más oscuras de la lengua del latín, "consecteur",
+                                    en un pasaje de Lorem Ipsum, y al seguir leyendo distintos textos del latín,
+                                    descubrió la fuente indudable.</p>
+                            </div>
+
+                            <h3>Galería</h3>
+                            <div class="row my-4">
+                                <div class="col-md-4 mb-4">
+                                    <img src="{% static 'img/blog/blog-2.jpg' %}" alt="Galería" class="img-fluid rounded publication-gallery-image" style="height: 200px; width: 100%;">
+                                </div>
+                                <div class="col-12"><p>Sin imágenes en galería.</p></div>
+                            </div>
+                        </div>
+
+                        <div class="meta-bottom">
+                            <i class="bi bi-folder"></i>
+                            <ul class="cats">
+                                <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                            </ul>
+                        </div>
+
+                    </article>
+                </div>
+            </section>
+
+            <!-- Comentarios -->
+            <section id="blog-comments" class="blog-comments section">
+                <div class="container">
+                    <h4 class="comments-count">Comentarios</h4>
+
+                    <div class="comment">
+                        <div class="d-flex">
+                            <div class="comment-img"><img src="{% static 'uploads/profile-default.jpg' %}" alt=""></div>
+                            <div>
+                                <h5>Usuario Alfredos</h5>
+                                <time>fecha</time>
+                                <p>me gusto la noticia</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p>No hay comentarios aprobados todavía.</p>
+                </div>
+            </section>
+
+            <section id="comment-form" class="comment-form section">
+                <div class="container">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <h4>Agregar comentario</h4>
+                        <div class="row">
+                            <div class="col form-group">
+                                <textarea name="contenido" id="contenido" rows="4" class="form-control" placeholder="Escribe tu comentario*" required></textarea>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Agregar comentario</button>
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <a href="{% url 'home:login' %}" class="btn btn-outline-primary mt-3">Inicia sesión para comentar</a>
                     </div>
                 </div>
-                <div class="sidebar-box">
-                    <h3 class="heading">Categorías</h3>
-                    <ul class="categories">
+            </section>
+
+        </div>
+
+        <div class="col-lg-4 sidebar">
+            <div class="widgets-container">
+
+                <div class="search-widget widget-item">
+                    <h3 class="widget-title">Buscar</h3>
+                    <form action="">
+                        <input type="text">
+                        <button type="submit" title="Buscar"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+
+                <div class="recent-posts-widget widget-item">
+                    <h3 class="widget-title">Otras noticias</h3>
+                    <div class="post-item">
+                        <img src="{% static 'img/blog/blog-recent-1.jpg' %}" alt="titulo" class="flex-shrink-0">
+                        <div>
+                            <h4><a href="{% url 'home:noticia' %}">Titulo</a></h4>
+                            <time>Fecha</time>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tags-widget widget-item">
+                    <h3 class="widget-title">Categorías</h3>
+                    <ul>
                         <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
                     </ul>
                 </div>
+
             </div>
         </div>
+
     </div>
-</section>
+</div>
 {% endblock content %}

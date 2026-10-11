@@ -1,55 +1,45 @@
 {% load static %}
-<div class="site-mobile-menu site-navbar-target">
-        <div class="site-mobile-menu-header">
-            <div class="site-mobile-menu-close">
-                <span class="icofont-close js-menu-toggle"></span>
-            </div>
+{% with current=request.resolver_match.url_name %}
+<header id="header" class="header d-flex align-items-center sticky-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+
+        <a href="{% url 'home:index' %}" class="logo d-flex align-items-center me-auto me-xl-0">
+            <h1 class="sitename">Canaco</h1>
+        </a>
+
+        <nav id="navmenu" class="navmenu">
+            <ul>
+                <li><a href="{% url 'home:index' %}" class="{% if current == 'index' %}active{% endif %}">Inicio</a></li>
+                <li class="dropdown"><a href="#" class="{% if current == 'categoria' %}active{% endif %}"><span>Categoría</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                    <ul>
+                        <li><a href="">Todas</a></li>
+                        <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'home:perfil' %}" class="{% if current == 'perfil' %}active{% endif %}">Perfil</a></li>
+                {% if request.user.is_authenticated %}
+                <li class="d-xl-none"><a href="{% url 'home:perfil' %}">{{ request.user.username }}</a></li>
+                {% else %}
+                <li class="d-xl-none"><a href="{% url 'home:login' %}">Iniciar sesión</a></li>
+                <li class="d-xl-none"><a href="{% url 'home:sign_up' %}">Registro</a></li>
+                {% endif %}
+            </ul>
+            <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+        </nav>
+
+        <div class="header-actions d-none d-xl-flex">
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'home:perfil' %}" class="login-link"><i class="bi bi-person-circle"></i> {{ request.user.username }}</a>
+            <form method="post" action="{% url 'home:login' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary">Cerrar sesión</button>
+            </form>
+            {% else %}
+            <a href="{% url 'home:login' %}" class="login-link">Iniciar sesión</a>
+            <a href="{% url 'home:sign_up' %}" class="btn btn-sm btn-primary">Registro</a>
+            {% endif %}
         </div>
-        <div class="site-mobile-menu-body"></div>
-    </div><nav class="site-nav">
-        <div class="container">
-            <div class="menu-bg-wrap">
-                <div class="site-navigation">
-                    <a href="#" class="logo m-0">Canaco<span class="text-primary">.</span></a>
 
-                    <div class="site-navigation-center text-center">
-                        <form action="#" class="search-form d-inline-block d-lg-none">
-                            <input type="text" class="form-control" placeholder="Buscar...">
-                            <span class="bi-search"></span>
-                        </form>
-
-                        <ul class="js-clone-nav d-none d-lg-inline-block text-start site-menu mx-auto">
-                            <li class="active"><a href="{% url 'home:index' %}">Inicio</a></li>
-                            <li class="has-children">
-                                <a href="#">Categoría</a>
-                                <ul class="dropdown">
-                                    <li><a href="">Todas</a></li>
-                                    <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="{% url 'home:perfil' %}">Perfil</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="site-navigation-actions">
-                        <a href="#" class="burger ms-auto site-menu-toggle js-menu-toggle d-inline-block d-lg-none light">
-                            <span></span>
-                        </a>
-                        {% if request.user.is_authenticated %}
-                        <div class="d-none d-lg-flex align-items-center justify-content-end gap-2">
-                            <a href="" class="text-white"></a>
-                            <form method="post" action="">
-                                <button type="submit" class="btn btn-sm btn-outline-light">Cerrar sesión</button>
-                            </form>
-                        </div>
-                        {% else %}
-                        <div class="d-none d-lg-flex align-items-center justify-content-end gap-2">
-                            <a href="{% url 'home:login' %}" class="text-white">Iniciar sesión</a>
-                            <a href="{% url 'home:sign_up' %}" class="btn btn-sm btn-outline-light">Registro</a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+    </div>
+</header>
+{% endwith %}

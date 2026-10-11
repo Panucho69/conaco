@@ -3,61 +3,93 @@
 {% block title %}Inicio{% endblock %}
 {% block content %}
 
-<section class="home-carousel-section bg-light">
-    <div id="homeCarousel" class="carousel slide home-carousel" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="0" class="active" aria-current="" aria-label="Noticia "></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active" data-bs-interval="4500">
-                <a href="" class="home-carousel-link">
-                    <img src="{% static 'images/hero_1.jpg' %}" class="d-block w-100 home-carousel-image" style="height: 400px; object-fit: cover; object-position: center;" alt="titulo">
-                    <div class="carousel-caption home-carousel-caption text-start">
-                        <span>Fecha de la noticia</span>
-                        <h2>Titulo de la noticia</h2>
-                        <p>Resumen de la noticia</p>
+<!-- Carrusel de noticias destacadas -->
+<section id="slider" class="slider section dark-background">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="swiper init-swiper">
+            <script type="application/json" class="swiper-config">
+                {
+                    "loop": true,
+                    "speed": 600,
+                    "autoplay": { "delay": 5000 },
+                    "slidesPerView": "auto",
+                    "centeredSlides": true,
+                    "pagination": { "el": ".swiper-pagination", "type": "bullets", "clickable": true },
+                    "navigation": { "nextEl": ".swiper-button-next", "prevEl": ".swiper-button-prev" }
+                }
+            </script>
 
+            <div class="swiper-wrapper">
+                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-1.jpg' %}');">
+                    <div class="content">
+                        <span class="text-white-50">Fecha de la noticia</span>
+                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                        <p>Resumen de la noticia</p>
                     </div>
-                </a>
+                </div>
+                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-2.jpg' %}');">
+                    <div class="content">
+                        <span class="text-white-50">Fecha de la noticia</span>
+                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                        <p>Resumen de la noticia</p>
+                    </div>
+                </div>
+                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-3.jpg' %}');">
+                    <div class="content">
+                        <span class="text-white-50">Fecha de la noticia</span>
+                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                        <p>Resumen de la noticia</p>
+                    </div>
+                </div>
             </div>
+
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
     </div>
 </section>
 
-<section class="section recent-news-section">
-    <div class="container">
-        <div class="row mb-4 justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="posts-entry-title">Noticias recientes</h2>
-                <a href="#" class="read-more">Ver todas</a>
-            </div>
-        </div>
+<!-- Noticias recientes -->
+<section id="recent-posts" class="culture-category section">
 
-        <div class="row justify-content-center">
-            <div class="col-lg-4 mb-4">
-                <div class="post-entry-alt">
-                    <a href="{% url 'home:noticia' %}" class="img-link">
-                        {% comment %} <img src="" alt="titulo" class="img-fluid publication-card-image" style="height: 200px; width: 100%; object-fit: cover; object-position: center;"> {% endcomment %}
-                        <img src="{% static 'images/img_1_horizontal.jpg' %}" alt="titulo" class="img-fluid publication-card-image" style="height: 200px; width: 100%; object-fit: cover; object-position: center;">
-                    </a>
-                    <div class="excerpt">
-                        <h2><a href="{% url 'home:noticia' %}">titulo</a></h2>
-                        <div class="post-meta align-items-center text-left clearfix">
-                            <span>Fecha</span>
-                            <span>&nbsp;-&nbsp;Sin categoría</span>
-                        </div>
-                        <p>Resumen de la noticia</p>
-                        <p><a href="{% url 'home:noticia' %}" class="read-more">Saber más</a></p>
-                        <small>Visitas: 24</small>
-                    </div>
+    <div class="container section-title" data-aos="fade-up">
+        <div class="section-title-container d-flex align-items-center justify-content-between">
+            <h2>Noticias recientes</h2>
+            <p><a href="{% url 'home:categoria' %}">Ver todas</a></p>
+        </div>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row g-5">
+            <div class="col-lg-4">
+                <div class="post-list">
+                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-1.jpg' %}" alt="titulo" class="img-fluid"></a>
+                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
+                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                    <p class="mb-2">Resumen de la noticia</p>
+                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
+                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="post-list">
+                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-2.jpg' %}" alt="titulo" class="img-fluid"></a>
+                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
+                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                    <p class="mb-2">Resumen de la noticia</p>
+                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
+                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="post-list">
+                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-3.jpg' %}" alt="titulo" class="img-fluid"></a>
+                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
+                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
+                    <p class="mb-2">Resumen de la noticia</p>
+                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
+                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
                 </div>
             </div>
             <div class="col-12">
@@ -65,5 +97,6 @@
             </div>
         </div>
     </div>
+
 </section>
 {% endblock content %}

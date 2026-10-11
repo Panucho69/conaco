@@ -2,37 +2,78 @@
 {% load static %}
 {% block title %}Categorías{% endblock %}
 {% block content %}
-<section class="section">
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-lg-8">
-                <h2 class="posts-entry-title">
-                    Categoría: Tecnología
-                </h2>
-            </div>
-            <div class="col-lg-4">
-                <select class="form-control" onchange="">
-                    <option value="categorias">Todas las categorías</option>
-                    <option value="tecnologia">Tecnología</option>
-                </select>
-            </div>
-        </div>
-        <div class="row mb-5 align-items-center">
-            <div class="col-lg-3">
-                <a href="{% url 'home:noticia' %}" class="img-link">
-                    <img src="{% static 'images/hero_1.jpg' %}" alt="titulo"
-                        class="img-fluid category-post-image">
-                </a>
-            </div>
-            <div class="col-lg-8">
-                <span class="date">Fecha &bullet; Categoria</span>
-                <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.
-                    Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500</p>
-                <p><a href="{% url 'home:noticia' %}" class="btn btn-sm btn-outline-primary">Leer más</a></p>
-            </div>
-        </div>
-        <p>No hay noticias para esta categoría.</p>
+
+<div class="page-title position-relative">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Categoría: Tecnología</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{% url 'home:index' %}">Inicio</a></li>
+                <li class="current">Categorías</li>
+            </ol>
+        </nav>
     </div>
-</section>
+</div>
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-lg-8">
+            <section id="blog-posts" class="blog-posts section">
+                <div class="container">
+                    <div class="row gy-4">
+
+                        <div class="col-lg-6">
+                            <article class="position-relative h-100">
+                                <div class="post-img position-relative overflow-hidden">
+                                    <img src="{% static 'img/blog/blog-1.jpg' %}" class="img-fluid" alt="titulo">
+                                    <span class="post-date">Fecha</span>
+                                </div>
+                                <div class="post-content d-flex flex-column">
+                                    <h3 class="post-title">Titulo de la noticia</h3>
+                                    <div class="meta d-flex align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-folder2"></i> <span class="ps-2">Categoria</span>
+                                        </div>
+                                    </div>
+                                    <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.
+                                        Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500</p>
+                                    <hr>
+                                    <a href="{% url 'home:noticia' %}" class="readmore stretched-link"><span>Leer más</span><i class="bi bi-arrow-right"></i></a>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div class="col-12">
+                            <p>No hay noticias para esta categoría.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-4 sidebar">
+            <div class="widgets-container">
+
+                <div class="categories-widget widget-item">
+                    <h3 class="widget-title">Filtrar</h3>
+                    <select class="form-select" onchange="">
+                        <option value="categorias">Todas las categorías</option>
+                        <option value="tecnologia">Tecnología</option>
+                    </select>
+                </div>
+
+                <div class="tags-widget widget-item">
+                    <h3 class="widget-title">Categorías</h3>
+                    <ul>
+                        <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock content %}
