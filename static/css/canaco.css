@@ -77,6 +77,26 @@
   color: var(--contrast-color);
 }
 
+/* Footer: entradas recientes con miniatura */
+.footer .footer-recent li {
+  padding: 8px 0;
+}
+
+.footer .footer-links .footer-recent a {
+  line-height: 1.35;
+}
+
+.footer .footer-recent img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+.footer .footer-recent small {
+  color: color-mix(in srgb, var(--default-color), transparent 40%);
+}
+
 /*--------------------------------------------------------------
 # Panel de administración (menú lateral)
 --------------------------------------------------------------*/

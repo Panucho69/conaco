@@ -41,9 +41,24 @@
 
             <div class="col-lg-4 col-md-6 footer-links">
                 <h4>Entradas recientes</h4>
-                <ul>
-                    <li><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></li>
+                <ul class="footer-recent">
+                    {% for noticia in global_recientes %}
+                    <li>
+                        <a href="{% url 'home:noticia_detalle' noticia.id %}" class="d-flex align-items-center">
+                            {% if noticia.imagen_portada %}
+                            <img src="{{ noticia.imagen_portada.display_url }}" alt="{{ noticia.titulo }}" class="rounded flex-shrink-0">
+                            {% else %}
+                            <img src="{% static 'img/blog/blog-recent-1.jpg' %}" alt="{{ noticia.titulo }}" class="rounded flex-shrink-0">
+                            {% endif %}
+                            <span>
+                                {{ noticia.titulo }}
+                                <small class="d-block">{{ noticia.createdat|date:"d M, Y" }}</small>
+                            </span>
+                        </a>
+                    </li>
+                    {% empty %}
                     <li><span>No hay noticias recientes.</span></li>
+                    {% endfor %}
                 </ul>
             </div>
 

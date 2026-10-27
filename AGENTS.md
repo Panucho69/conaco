@@ -58,6 +58,7 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 - Los nombres de rutas están en `home/urls.py` (`app_name = "home"`). La de noticias del panel es `crud_noticias`.
 - Las acciones del panel siguen el patrón `crud_<modulo>/<int:pk>/<accion>/` (por ejemplo `crud_noticias/5/editar/`); las que borran (`eliminar_*`) solo actúan con POST. El detalle público de una noticia es `home:noticia_detalle` y el de una categoría `home:categoria_detalle`.
 - Las noticias tienen `estado` (`borrador` o `publicado`); en plantillas compara con `noticia.estado == 'publicado'`. Los visitantes solo ven noticias publicadas y comentarios aprobados.
+- Todas las plantillas reciben `global_categorias` (todas las categorías) y `global_recientes` (las 3 noticias publicadas más recientes) del context processor `home/context_processors.py`. Úsalas en lugar de pasarlas desde cada vista; el header y el footer ya las usan.
 - El menú lateral marca la opción activa comparando `request.resolver_match.url_name`; si agregas una página del panel, agrega su nombre a la condición del enlace correspondiente en `partials/sidebar.html`.
 
 ## Laboratorios nuevos

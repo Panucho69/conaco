@@ -28,7 +28,7 @@ El diseño usa [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templa
 
 ## Avance por laboratorio
 
-Las rutas de plantillas de los labs 07 son relativas a `home/templates/`.
+Las rutas de plantillas que empiezan con `home/` o `partials/` (labs 07 en adelante) son relativas a `home/templates/`.
 
 | Lab | Tema | Dónde está |
 |---|---|---|
@@ -39,6 +39,11 @@ Las rutas de plantillas de los labs 07 son relativas a `home/templates/`.
 | 07 | Plantillas de noticia, categoría, login y registro | `home/noticia.html`, `home/categoria.html`, `home/login.html`, `home/sign_up.html` |
 | 07A | Panel de administración (menú lateral) y perfil | `partials/sidebar_base.html`, `partials/sidebar.html`, `home/perfil.html`, `home/crud_perfil.html` |
 | 07B | CRUDs del panel: noticias, comentarios, categorías, usuarios y contraseña | `home/crud_noticias.html`, `home/crear_publicacion.html`, `home/crud_comentarios.html`, `home/crud_categorias.html`, `home/crud_usuarios.html`, `home/crear_usuario.html`, `home/crud_cambiar_contrasena.html` |
+| 08 | Base de datos MySQL (XAMPP), migraciones y modelos | `canaco/settings.py`, `home/models.py`, `home/migrations/` |
+| 10 | Registro, login/logout, perfil, cambio de contraseña y CRUD de usuarios con roles | `home/views.py`, `home/urls.py`, `home/signals.py`, `home/apps.py` |
+| 11 | CRUD de noticias (portada y galería), comentarios con moderación y categorías | `home/views.py`, `home/urls.py`, `home/noticia.html`, `home/editar_categoria.html` |
+| 12 | Inicio y página de categorías con datos reales | `home/views.py`, `home/index.html`, `home/categoria.html` |
+| 13 | Context processor: categorías y noticias recientes en todas las páginas | `home/context_processors.py`, `canaco/settings.py`, `partials/footer.html`, `partials/header.html` |
 
 ## Cómo correrlo
 

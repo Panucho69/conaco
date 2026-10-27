@@ -13,7 +13,9 @@
                 <li class="dropdown"><a href="#" class="{% if current == 'categoria' or current == 'categoria_detalle' %}active{% endif %}"><span>Categoría</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                     <ul>
                         <li><a href="{% url 'home:categoria' %}">Todas</a></li>
-                        <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                        {% for categoria in global_categorias %}
+                        <li><a href="{% url 'home:categoria_detalle' categoria.id %}">{{ categoria.nombre }}</a></li>
+                        {% endfor %}
                     </ul>
                 </li>
                 <li><a href="{% url 'home:perfil' %}" class="{% if current == 'perfil' %}active{% endif %}">Perfil</a></li>
