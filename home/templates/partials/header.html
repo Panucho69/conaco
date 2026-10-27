@@ -30,7 +30,7 @@
         <div class="header-actions d-none d-xl-flex">
             {% if request.user.is_authenticated %}
             <a href="{% url 'home:perfil' %}" class="login-link"><i class="bi bi-person-circle"></i> {{ request.user.username }}</a>
-            <form method="post" action="{% url 'home:login' %}">
+            <form method="post" action="{% url 'home:logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-sm btn-outline-primary">Cerrar sesión</button>
             </form>

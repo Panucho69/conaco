@@ -33,6 +33,15 @@ python manage.py runserver
 - Superusuario para `/admin`: `superadmin`.
 - Después de cambiar `home/models.py`: `python manage.py makemigrations` y luego `python manage.py migrate`.
 
+## Usuarios y permisos
+
+- Cada `User` tiene un `Perfil` (apellidos y foto). Se crea solo con la signal de `home/signals.py`; en las vistas usa `Perfil.objects.get_or_create(user=...)` por si el usuario es anterior a la signal.
+- Roles: **colaborador** (usuario normal), **editor** (`is_staff`) y **administrador** (`is_superuser`).
+- Vistas que requieren sesión: `@login_required`. Vistas del panel de administración (noticias, comentarios, categorías, usuarios): `@operador_required`, definido en `home/views.py` (usuario staff y activo).
+- El menú lateral solo muestra las opciones de administración a usuarios staff.
+- Login y logout usan las vistas de Django (`LoginView`, `LogoutView`); el logout se hace con un formulario POST a `home:logout`.
+- Los archivos subidos se guardan con `guardar_archivo()` en `media/uploads/` y se registran en el modelo `Archivo`; en plantillas se muestran con `archivo.display_url`. La carpeta `media/` no se sube a git.
+
 ## Plantilla visual (ZenBlog)
 
 El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-template/) (Bootstrap 5.3).
