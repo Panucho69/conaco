@@ -55,12 +55,26 @@
   color: var(--heading-color);
 }
 
-/* Imágenes de publicaciones */
+/* Imágenes de publicaciones: recortadas al mismo tamaño aunque se suban con otras proporciones */
 .publication-cover-image,
 .publication-gallery-image,
-.sidebar-post-image {
+.sidebar-post-image,
+.publication-card-image,
+.category-post-image {
   object-fit: cover;
   object-position: center;
+}
+
+.publication-card-image,
+.category-post-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+}
+
+/* Categoría seleccionada en la lista de categorías */
+.tags-widget ul a.active {
+  background: var(--accent-color);
+  color: var(--contrast-color);
 }
 
 /*--------------------------------------------------------------

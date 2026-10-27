@@ -10,9 +10,9 @@
         <nav id="navmenu" class="navmenu">
             <ul>
                 <li><a href="{% url 'home:index' %}" class="{% if current == 'index' %}active{% endif %}">Inicio</a></li>
-                <li class="dropdown"><a href="#" class="{% if current == 'categoria' %}active{% endif %}"><span>Categoría</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                <li class="dropdown"><a href="#" class="{% if current == 'categoria' or current == 'categoria_detalle' %}active{% endif %}"><span>Categoría</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                     <ul>
-                        <li><a href="">Todas</a></li>
+                        <li><a href="{% url 'home:categoria' %}">Todas</a></li>
                         <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
                     </ul>
                 </li>

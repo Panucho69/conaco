@@ -1,15 +1,20 @@
 {% extends 'partials/base.html' %}
 {% load static %}
-{% block title %}Categorías{% endblock %}
+{% block title %}{% if categoria_actual %}{{ categoria_actual.nombre }}{% else %}Categorías{% endif %}{% endblock %}
 {% block content %}
 
 <div class="page-title position-relative">
     <div class="container d-lg-flex justify-content-between align-items-center">
-        <h1 class="mb-2 mb-lg-0">Categoría: Tecnología</h1>
+        <h1 class="mb-2 mb-lg-0">{% if categoria_actual %}Categoría: {{ categoria_actual.nombre }}{% else %}Todas las noticias{% endif %}</h1>
         <nav class="breadcrumbs">
             <ol>
                 <li><a href="{% url 'home:index' %}">Inicio</a></li>
+                {% if categoria_actual %}
+                <li><a href="{% url 'home:categoria' %}">Categorías</a></li>
+                <li class="current">{{ categoria_actual.nombre }}</li>
+                {% else %}
                 <li class="current">Categorías</li>
+                {% endif %}
             </ol>
         </nav>
     </div>
@@ -23,30 +28,35 @@
                 <div class="container">
                     <div class="row gy-4">
 
+                        {% for noticia in publicaciones %}
                         <div class="col-lg-6">
                             <article class="position-relative h-100">
                                 <div class="post-img position-relative overflow-hidden">
-                                    <img src="{% static 'img/blog/blog-1.jpg' %}" class="img-fluid" alt="titulo">
-                                    <span class="post-date">Fecha</span>
+                                    {% if noticia.imagen_portada %}
+                                    <img src="{{ noticia.imagen_portada.display_url }}" class="img-fluid category-post-image" alt="{{ noticia.titulo }}">
+                                    {% else %}
+                                    <img src="{% static 'img/blog/blog-1.jpg' %}" class="img-fluid category-post-image" alt="{{ noticia.titulo }}">
+                                    {% endif %}
+                                    <span class="post-date">{{ noticia.createdat|date:"d M Y" }}</span>
                                 </div>
                                 <div class="post-content d-flex flex-column">
-                                    <h3 class="post-title">Titulo de la noticia</h3>
+                                    <h3 class="post-title">{{ noticia.titulo }}</h3>
                                     <div class="meta d-flex align-items-center">
                                         <div class="d-flex align-items-center">
-                                            <i class="bi bi-folder2"></i> <span class="ps-2">Categoria</span>
+                                            <i class="bi bi-folder2"></i> <span class="ps-2">{% if noticia.categoria %}{{ noticia.categoria.nombre }}{% else %}Sin categoría{% endif %}</span>
                                         </div>
                                     </div>
-                                    <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.
-                                        Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500</p>
+                                    <p>{{ noticia.resumen }}</p>
                                     <hr>
-                                    <a href="{% url 'home:noticia' %}" class="readmore stretched-link"><span>Leer más</span><i class="bi bi-arrow-right"></i></a>
+                                    <a href="{% url 'home:noticia_detalle' noticia.id %}" class="readmore stretched-link"><span>Leer más</span><i class="bi bi-arrow-right"></i></a>
                                 </div>
                             </article>
                         </div>
-
+                        {% empty %}
                         <div class="col-12">
                             <p>No hay noticias para esta categoría.</p>
                         </div>
+                        {% endfor %}
 
                     </div>
                 </div>
@@ -58,16 +68,22 @@
 
                 <div class="categories-widget widget-item">
                     <h3 class="widget-title">Filtrar</h3>
-                    <select class="form-select" onchange="">
-                        <option value="categorias">Todas las categorías</option>
-                        <option value="tecnologia">Tecnología</option>
+                    <select class="form-select" onchange="if (this.value) window.location.href=this.value;">
+                        <option value="{% url 'home:categoria' %}">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{% url 'home:categoria_detalle' categoria.id %}" {% if categoria_actual and categoria_actual.id == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
                 <div class="tags-widget widget-item">
                     <h3 class="widget-title">Categorías</h3>
                     <ul>
-                        <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                        {% for categoria in categorias %}
+                        <li><a href="{% url 'home:categoria_detalle' categoria.id %}" class="{% if categoria_actual and categoria_actual.id == categoria.id %}active{% endif %}">{{ categoria.nombre }}</a></li>
+                        {% empty %}
+                        <li><span>Sin categorías</span></li>
+                        {% endfor %}
                     </ul>
                 </div>
 

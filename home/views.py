@@ -33,7 +33,13 @@ def guardar_archivo(upload, user):
 # Páginas públicas
 
 def index(request):
-    return render(request, 'home/index.html')
+    publicaciones = Publicacion.objects.filter(
+        estado=Publicacion.ESTADO_PUBLICADO,
+    ).select_related('categoria', 'autor', 'imagen_portada').order_by('-createdat')
+    return render(request, 'home/index.html', {
+        'slider': publicaciones[:3],
+        'publicaciones': publicaciones[:3],
+    })
 
 
 def contactanos(request):
@@ -41,7 +47,18 @@ def contactanos(request):
 
 
 def categoria(request, pk=None):
-    return render(request, 'home/categoria.html')
+    categorias = Categoria.objects.all().order_by('nombre')
+    categoria_actual = get_object_or_404(Categoria, pk=pk) if pk else None
+    publicaciones = Publicacion.objects.filter(estado=Publicacion.ESTADO_PUBLICADO).select_related(
+        'categoria', 'autor', 'imagen_portada',
+    )
+    if categoria_actual:
+        publicaciones = publicaciones.filter(categoria=categoria_actual)
+    return render(request, 'home/categoria.html', {
+        'categorias': categorias,
+        'categoria_actual': categoria_actual,
+        'publicaciones': publicaciones.order_by('-createdat'),
+    })
 
 
 def noticia(request, pk=None):

@@ -3,15 +3,16 @@
 {% block title %}Inicio{% endblock %}
 {% block content %}
 
+{% if slider %}
 <!-- Carrusel de noticias destacadas -->
 <section id="slider" class="slider section dark-background">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
         <div class="swiper init-swiper">
             <script type="application/json" class="swiper-config">
                 {
-                    "loop": true,
+                    "rewind": true,
                     "speed": 600,
-                    "autoplay": { "delay": 5000 },
+                    "autoplay": { "delay": 4500 },
                     "slidesPerView": "auto",
                     "centeredSlides": true,
                     "pagination": { "el": ".swiper-pagination", "type": "bullets", "clickable": true },
@@ -20,27 +21,17 @@
             </script>
 
             <div class="swiper-wrapper">
-                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-1.jpg' %}');">
+                {% for noticia in slider %}
+                <div class="swiper-slide" style="background-image: url('{% if noticia.imagen_portada %}{{ noticia.imagen_portada.display_url }}{% else %}{% static 'img/post-slide-1.jpg' %}{% endif %}');">
                     <div class="content">
-                        <span class="text-white-50">Fecha de la noticia</span>
-                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                        <p>Resumen de la noticia</p>
+                        <span class="text-white-50">{{ noticia.createdat|date:"d M Y" }}</span>
+                        <h2><a href="{% url 'home:noticia_detalle' noticia.id %}">{{ noticia.titulo }}</a></h2>
+                        {% if noticia.resumen %}
+                        <p>{{ noticia.resumen|truncatewords:20 }}</p>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-2.jpg' %}');">
-                    <div class="content">
-                        <span class="text-white-50">Fecha de la noticia</span>
-                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                        <p>Resumen de la noticia</p>
-                    </div>
-                </div>
-                <div class="swiper-slide" style="background-image: url('{% static 'img/post-slide-3.jpg' %}');">
-                    <div class="content">
-                        <span class="text-white-50">Fecha de la noticia</span>
-                        <h2><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                        <p>Resumen de la noticia</p>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
 
             <div class="swiper-button-next"></div>
@@ -49,6 +40,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Noticias recientes -->
 <section id="recent-posts" class="culture-category section">
@@ -62,39 +54,32 @@
 
     <div class="container" data-aos="fade-up" data-aos-delay="100">
         <div class="row g-5">
+            {% for noticia in publicaciones %}
             <div class="col-lg-4">
                 <div class="post-list">
-                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-1.jpg' %}" alt="titulo" class="img-fluid"></a>
-                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
-                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                    <p class="mb-2">Resumen de la noticia</p>
-                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
-                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
+                    <a href="{% url 'home:noticia_detalle' noticia.id %}">
+                        {% if noticia.imagen_portada %}
+                        <img src="{{ noticia.imagen_portada.display_url }}" alt="{{ noticia.titulo }}" class="img-fluid publication-card-image">
+                        {% else %}
+                        <img src="{% static 'img/post-landscape-1.jpg' %}" alt="{{ noticia.titulo }}" class="img-fluid publication-card-image">
+                        {% endif %}
+                    </a>
+                    <div class="post-meta">
+                        <span class="date">{% if noticia.categoria %}{{ noticia.categoria.nombre }}{% else %}Sin categoría{% endif %}</span>
+                        <span class="mx-1">•</span>
+                        <span>{{ noticia.createdat|date:"d M Y" }}</span>
+                    </div>
+                    <h2 class="mb-2"><a href="{% url 'home:noticia_detalle' noticia.id %}">{{ noticia.titulo }}</a></h2>
+                    <p class="mb-2">{{ noticia.resumen }}</p>
+                    <p class="mb-1"><a href="{% url 'home:noticia_detalle' noticia.id %}">Saber más</a></p>
+                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: {{ noticia.visitas }}</small>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="post-list">
-                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-2.jpg' %}" alt="titulo" class="img-fluid"></a>
-                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
-                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                    <p class="mb-2">Resumen de la noticia</p>
-                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
-                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="post-list">
-                    <a href="{% url 'home:noticia' %}"><img src="{% static 'img/post-landscape-3.jpg' %}" alt="titulo" class="img-fluid"></a>
-                    <div class="post-meta"><span class="date">Sin categoría</span> <span class="mx-1">•</span> <span>Fecha</span></div>
-                    <h2 class="mb-2"><a href="{% url 'home:noticia' %}">Titulo de la noticia</a></h2>
-                    <p class="mb-2">Resumen de la noticia</p>
-                    <p class="mb-1"><a href="{% url 'home:noticia' %}">Saber más</a></p>
-                    <small class="text-muted"><i class="bi bi-eye"></i> Visitas: 24</small>
-                </div>
-            </div>
+            {% empty %}
             <div class="col-12">
                 <p>No hay noticias publicadas todavía.</p>
             </div>
+            {% endfor %}
         </div>
     </div>
 
