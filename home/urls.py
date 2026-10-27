@@ -10,7 +10,9 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("contactanos/", views.contactanos, name="contactanos"),
     path("categoria/", views.categoria, name="categoria"),
+    path("categoria/<int:pk>/", views.categoria, name="categoria_detalle"),
     path("noticia/", views.noticia, name="noticia"),
+    path("noticia/<int:pk>/", views.noticia, name="noticia_detalle"),
 
     # Cuentas
     path("login/", auth_views.LoginView.as_view(template_name='home/login.html'), name="login"),
@@ -25,9 +27,16 @@ urlpatterns = [
     # Panel: noticias, comentarios y categorías
     path("crud_noticias/", views.crud_noticias, name="crud_noticias"),
     path("crear_publicacion/", views.crear_publicacion, name="crear_publicacion"),
+    path("crud_noticias/<int:pk>/editar/", views.editar_publicacion, name="editar_publicacion"),
+    path("crud_noticias/<int:pk>/publicar/", views.publicar_publicacion, name="publicar_publicacion"),
+    path("crud_noticias/<int:pk>/eliminar/", views.eliminar_publicacion, name="eliminar_publicacion"),
     path("crud_comentarios/", views.crud_comentarios, name="crud_comentarios"),
+    path("crud_comentarios/<int:pk>/aprobar/", views.aprobar_comentario, name="aprobar_comentario"),
+    path("crud_comentarios/<int:pk>/bloquear/", views.bloquear_comentario, name="bloquear_comentario"),
+    path("crud_comentarios/<int:pk>/eliminar/", views.eliminar_comentario, name="eliminar_comentario"),
     path("crud_categorias/", views.crud_categorias, name="crud_categorias"),
-    path("editar_categoria/", views.editar_categoria, name="editar_categoria"),
+    path("crud_categorias/<int:pk>/editar/", views.editar_categoria, name="editar_categoria"),
+    path("crud_categorias/<int:pk>/eliminar/", views.eliminar_categoria, name="eliminar_categoria"),
 
     # Panel: usuarios
     path("crud_usuarios/", views.crud_usuarios, name="crud_usuarios"),

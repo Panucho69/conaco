@@ -56,6 +56,8 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 - Las páginas públicas extienden `partials/base.html` y las del panel `partials/sidebar_base.html`. **Todas** llenan `{% block content %}`; además existen `{% block title %}`, `{% block extra_css %}` y `{% block extra_js %}`.
 - Enlaces siempre con `{% url 'home:nombre' %}` y archivos con `{% static '...' %}`; nunca rutas escritas a mano.
 - Los nombres de rutas están en `home/urls.py` (`app_name = "home"`). La de noticias del panel es `crud_noticias`.
+- Las acciones del panel siguen el patrón `crud_<modulo>/<int:pk>/<accion>/` (por ejemplo `crud_noticias/5/editar/`); las que borran (`eliminar_*`) solo actúan con POST. El detalle público de una noticia es `home:noticia_detalle` y el de una categoría `home:categoria_detalle`.
+- Las noticias tienen `estado` (`borrador` o `publicado`); en plantillas compara con `noticia.estado == 'publicado'`. Los visitantes solo ven noticias publicadas y comentarios aprobados.
 - El menú lateral marca la opción activa comparando `request.resolver_match.url_name`; si agregas una página del panel, agrega su nombre a la condición del enlace correspondiente en `partials/sidebar.html`.
 
 ## Laboratorios nuevos

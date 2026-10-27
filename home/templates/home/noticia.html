@@ -1,6 +1,6 @@
 {% extends 'partials/base.html' %}
 {% load static %}
-{% block title %}Titulo de la noticia{% endblock %}
+{% block title %}{{ publicacion.titulo }}{% endblock %}
 {% block content %}
 
 <div class="page-title">
@@ -9,14 +9,28 @@
         <nav class="breadcrumbs">
             <ol>
                 <li><a href="{% url 'home:index' %}">Inicio</a></li>
-                <li><a href="{% url 'home:categoria' %}">Categoría</a></li>
-                <li class="current">Titulo de la noticia</li>
+                {% if publicacion.categoria %}
+                <li><a href="{% url 'home:categoria_detalle' publicacion.categoria.id %}">{{ publicacion.categoria.nombre }}</a></li>
+                {% endif %}
+                <li class="current">{{ publicacion.titulo|truncatewords:6 }}</li>
             </ol>
         </nav>
     </div>
 </div>
 
 <div class="container">
+
+    {% if messages %}
+    <div class="pt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="row">
 
         <div class="col-lg-8">
@@ -26,51 +40,52 @@
                 <div class="container">
                     <article class="article">
 
+                        {% if publicacion.imagen_portada %}
                         <div class="post-img">
-                            <img src="{% static 'img/blog/blog-1.jpg' %}" alt="" class="img-fluid publication-cover-image" style="max-height: 500px; width: 100%;">
+                            <img src="{{ publicacion.imagen_portada.display_url }}" alt="{{ publicacion.titulo }}" class="img-fluid publication-cover-image" style="max-height: 500px; width: 100%;">
                         </div>
+                        {% endif %}
 
-                        <h2 class="title">Titulo de la noticia</h2>
+                        <h2 class="title">{{ publicacion.titulo }}</h2>
 
                         <div class="meta-top">
                             <ul>
-                                <li class="d-flex align-items-center"><i class="bi bi-person"></i> <span>Autor</span></li>
-                                <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <span>Fecha</span></li>
-                                <li class="d-flex align-items-center"><i class="bi bi-folder2"></i> <span>Categoría</span></li>
-                                <li class="d-flex align-items-center"><i class="bi bi-eye"></i> <span>Visitas: 4</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-person"></i> <span>{% if publicacion.autor %}{{ publicacion.autor.username }}{% else %}Anónimo{% endif %}</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <span>{{ publicacion.createdat|date:"d M Y H:i" }}</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-folder2"></i> <span>{% if publicacion.categoria %}{{ publicacion.categoria.nombre }}{% else %}Sin categoría{% endif %}</span></li>
+                                <li class="d-flex align-items-center"><i class="bi bi-eye"></i> <span>Visitas {{ publicacion.visitas }}</span></li>
                             </ul>
                         </div>
 
                         <div class="content">
                             <blockquote>
-                                <p>Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500</p>
+                                <p>{{ publicacion.resumen }}</p>
                             </blockquote>
 
                             <div class="post-content-body">
-                                <p>Al contrario del pensamiento popular, el texto de Lorem Ipsum no es simplemente texto aleatorio.
-                                    Tiene sus raices en una pieza clásica de la literatura del Latin, que data del año 45 antes de Cristo,
-                                    haciendo que este adquiera mas de 2000 años de antiguedad.</p>
-                                <p>Richard McClintock, un profesor de Latin de la Universidad de Hampden-Sydney en Virginia,
-                                    encontró una de las palabras más oscuras de la lengua del latín, "consecteur",
-                                    en un pasaje de Lorem Ipsum, y al seguir leyendo distintos textos del latín,
-                                    descubrió la fuente indudable.</p>
+                                {{ publicacion.contenido|safe }}
                             </div>
 
                             <h3>Galería</h3>
                             <div class="row my-4">
+                                {% for imagen in publicacion.galeria.all %}
                                 <div class="col-md-4 mb-4">
-                                    <img src="{% static 'img/blog/blog-2.jpg' %}" alt="Galería" class="img-fluid rounded publication-gallery-image" style="height: 200px; width: 100%;">
+                                    <img src="{{ imagen.archivo.display_url }}" alt="Galería" class="img-fluid rounded publication-gallery-image" style="height: 200px; width: 100%;">
                                 </div>
+                                {% empty %}
                                 <div class="col-12"><p>Sin imágenes en galería.</p></div>
+                                {% endfor %}
                             </div>
                         </div>
 
+                        {% if publicacion.categoria %}
                         <div class="meta-bottom">
                             <i class="bi bi-folder"></i>
                             <ul class="cats">
-                                <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                                <li><a href="{% url 'home:categoria_detalle' publicacion.categoria.id %}">{{ publicacion.categoria.nombre }}</a></li>
                             </ul>
                         </div>
+                        {% endif %}
 
                     </article>
                 </div>
@@ -81,23 +96,32 @@
                 <div class="container">
                     <h4 class="comments-count">Comentarios</h4>
 
+                    {% for comentario in comentarios %}
                     <div class="comment">
                         <div class="d-flex">
-                            <div class="comment-img"><img src="{% static 'uploads/profile-default.jpg' %}" alt=""></div>
+                            <div class="comment-img">
+                                {% if comentario.user.perfil.foto_perfil %}
+                                <img src="{{ comentario.user.perfil.foto_perfil.display_url }}" alt="">
+                                {% else %}
+                                <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
+                                {% endif %}
+                            </div>
                             <div>
-                                <h5>Usuario Alfredos</h5>
-                                <time>fecha</time>
-                                <p>me gusto la noticia</p>
+                                <h5>{{ comentario.user.username }}</h5>
+                                <time datetime="{{ comentario.createdat|date:'c' }}">{{ comentario.createdat|date:"d M Y H:i" }}</time>
+                                <p>{{ comentario.contenido }}</p>
                             </div>
                         </div>
                     </div>
-
+                    {% empty %}
                     <p>No hay comentarios aprobados todavía.</p>
+                    {% endfor %}
                 </div>
             </section>
 
             <section id="comment-form" class="comment-form section">
                 <div class="container">
+                    {% if request.user.is_authenticated %}
                     <form method="POST">
                         {% csrf_token %}
                         <h4>Agregar comentario</h4>
@@ -110,9 +134,11 @@
                             <button type="submit" class="btn btn-primary">Agregar comentario</button>
                         </div>
                     </form>
+                    {% else %}
                     <div class="text-center">
-                        <a href="{% url 'home:login' %}" class="btn btn-outline-primary mt-3">Inicia sesión para comentar</a>
+                        <a href="{% url 'home:login' %}" class="btn btn-primary">Inicia sesión para comentar</a>
                     </div>
+                    {% endif %}
                 </div>
             </section>
 
@@ -121,29 +147,33 @@
         <div class="col-lg-4 sidebar">
             <div class="widgets-container">
 
-                <div class="search-widget widget-item">
-                    <h3 class="widget-title">Buscar</h3>
-                    <form action="">
-                        <input type="text">
-                        <button type="submit" title="Buscar"><i class="bi bi-search"></i></button>
-                    </form>
-                </div>
-
                 <div class="recent-posts-widget widget-item">
                     <h3 class="widget-title">Otras noticias</h3>
+                    {% for noticia in recientes %}
                     <div class="post-item">
-                        <img src="{% static 'img/blog/blog-recent-1.jpg' %}" alt="titulo" class="flex-shrink-0">
+                        {% if noticia.imagen_portada %}
+                        <img src="{{ noticia.imagen_portada.display_url }}" alt="{{ noticia.titulo }}" class="flex-shrink-0 sidebar-post-image">
+                        {% else %}
+                        <img src="{% static 'img/post-landscape-1.jpg' %}" alt="{{ noticia.titulo }}" class="flex-shrink-0 sidebar-post-image">
+                        {% endif %}
                         <div>
-                            <h4><a href="{% url 'home:noticia' %}">Titulo</a></h4>
-                            <time>Fecha</time>
+                            <h4><a href="{% url 'home:noticia_detalle' noticia.id %}">{{ noticia.titulo }}</a></h4>
+                            <time datetime="{{ noticia.createdat|date:'c' }}">{{ noticia.createdat|date:"d M Y" }}</time>
                         </div>
                     </div>
+                    {% empty %}
+                    <p>No hay otras noticias.</p>
+                    {% endfor %}
                 </div>
 
                 <div class="tags-widget widget-item">
                     <h3 class="widget-title">Categorías</h3>
                     <ul>
-                        <li><a href="{% url 'home:categoria' %}">Tecnología</a></li>
+                        {% for categoria in categorias %}
+                        <li><a href="{% url 'home:categoria_detalle' categoria.id %}">{{ categoria.nombre }}</a></li>
+                        {% empty %}
+                        <li><span>Sin categorías</span></li>
+                        {% endfor %}
                     </ul>
                 </div>
 
