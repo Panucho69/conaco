@@ -1,0 +1,64 @@
+# Entorno de desarrollo de Canaco en Docker.
+#   docker compose up -d     -> enciende todo
+#   docker compose down      -> lo apaga (los datos se conservan)
+#
+#   Sitio:       http://localhost:8000
+#   phpMyAdmin:  http://localhost:8081
+
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: canaco
+      MARIADB_USER: canaco
+      MARIADB_PASSWORD: canaco
+      MARIADB_ROOT_PASSWORD: canaco_root
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    volumes:
+      - db_data:/var/lib/mysql
+      # Solo la primera vez (con el volumen vacío) importa los .sql de esta carpeta
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # 3307 para no chocar con el MySQL de XAMPP, que usa 3306
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  web:
+    build: .
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DB_NAME: canaco
+      DB_USER: canaco
+      DB_PASSWORD: canaco
+      DB_HOST: db
+      DB_PORT: "3306"
+    volumes:
+      # Comparte el código (y media/) con tu carpeta: lo que edites en VS Code se ve al instante
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: canaco_root
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

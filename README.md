@@ -47,11 +47,31 @@ Las rutas de plantillas que empiezan con `home/` o `partials/` (labs 07 en adela
 
 ## Cómo correrlo
 
+Con [Docker Desktop](https://www.docker.com/products/docker-desktop/) encendido:
+
+```bash
+docker compose up -d
+```
+
+- Sitio: http://localhost:8000
+- phpMyAdmin: http://localhost:8081
+
+Para apagarlo: `docker compose down`. Los datos de la base se conservan.
+
+Los comandos de Django se corren dentro del contenedor, por ejemplo:
+
+```bash
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+```
+
+### Sin Docker (XAMPP)
+
+Con el MySQL de XAMPP encendido y la base `canaco` creada:
+
 ```bash
 python3 -m venv canaco_env
 source canaco_env/bin/activate
 pip install -r requirements.txt
 python manage.py runserver
 ```
-
-Luego abre `http://localhost:8000/`.

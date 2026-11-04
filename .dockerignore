@@ -1,0 +1,11 @@
+.git
+canaco_env
+venv
+__pycache__
+*.pyc
+media
+docker/initdb
+db.sqlite3
+.env
+.vscode
+.DS_Store

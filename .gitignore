@@ -7,3 +7,6 @@ db.sqlite3
 .env
 .vscode/
 media/
+
+# Respaldo de la base que importa Docker (tiene usuarios y contraseñas)
+docker/initdb/*.sql

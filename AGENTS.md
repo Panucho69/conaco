@@ -24,14 +24,25 @@ conaco/
 
 ## Cómo correrlo
 
+El proyecto corre en **Docker** (`docker-compose.yml`) con tres servicios:
+
+- `web`: Django en http://localhost:8000. Monta la carpeta del proyecto en `/app`, así que los cambios de código se ven al instante.
+- `db`: MariaDB 10.11 con la base `canaco` (usuario `canaco`, contraseña `canaco`; root: `canaco_root`). Desde la Mac se llega por el puerto **3307**.
+- `phpmyadmin`: http://localhost:8081.
+
 ```bash
-source canaco_env/bin/activate
-python manage.py runserver
+docker compose up -d          # encender
+docker compose down           # apagar (los datos se conservan en el volumen db_data)
+docker compose exec web python manage.py <comando>   # migrate, makemigrations, createsuperuser...
+docker compose logs -f web    # ver errores de Django
 ```
 
-- Base de datos: **MySQL de XAMPP**, base `canaco`, usuario `root` sin contraseña, `HOST` `127.0.0.1` (no `localhost`: en Mac, `localhost` busca un socket que XAMPP no usa). Antes de correr el proyecto, el MySQL de XAMPP tiene que estar encendido.
+- El usuario tiene la función de shell `canaco`, que enciende Docker y abre el sitio.
+- Los comandos de `manage.py` se corren **dentro** del contenedor `web` con `docker compose exec web ...`.
+- `canaco/settings.py` lee la conexión de las variables `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` y `DB_PORT` (las define `docker-compose.yml`). Sin ellas usa el MySQL de XAMPP (`root` sin contraseña en `127.0.0.1:3306`), que queda como alternativa.
+- La primera vez que se crea el volumen, MariaDB importa `docker/initdb/canaco.sql` (respaldo de la base de XAMPP, no se sube a git).
 - Superusuario para `/admin`: `superadmin`.
-- Después de cambiar `home/models.py`: `python manage.py makemigrations` y luego `python manage.py migrate`.
+- Después de cambiar `home/models.py`: `docker compose exec web python manage.py makemigrations` y luego `... migrate`.
 
 ## Usuarios y permisos
 
