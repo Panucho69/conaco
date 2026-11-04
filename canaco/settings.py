@@ -20,13 +20,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+# En Azure, DJANGO_SECRET_KEY y DJANGO_DEBUG se definen en la configuración de la App Service.
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x!(w1c&ra$dil&+l*z59h%nvp_ahg_95-s*m-lf4v9+x7&-ag#'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-x!(w1c&ra$dil&+l*z59h%nvp_ahg_95-s*m-lf4v9+x7&-ag#',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = []
+
+# Azure define WEBSITE_HOSTNAME con el dominio de la app (canaco-xxx.azurewebsites.net)
+if os.environ.get('WEBSITE_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['WEBSITE_HOSTNAME']}")
+    # Azure atiende HTTPS y le pasa la petición a Django por HTTP
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -43,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,6 +113,10 @@ DATABASES = {
     }
 }
 
+# Azure Database for MySQL exige conexión cifrada
+if os.environ.get('DB_SSL') == 'true':
+    DATABASES['default']['OPTIONS']['ssl_mode'] = 'REQUIRED'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -137,6 +154,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+# collectstatic junta aquí los archivos estáticos y whitenoise los sirve en producción
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

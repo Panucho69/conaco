@@ -15,7 +15,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# En tu Mac, docker-compose.yml usa runserver; esta línea es la de producción (Azure)
+CMD ["sh", "startup.sh"]

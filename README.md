@@ -65,6 +65,21 @@ docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
 ```
 
+Si cambia `requirements.txt`, reconstruye con `docker compose up -d --build`.
+
+### Producción (Azure)
+
+En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y gunicorn) y se configura con variables de entorno:
+
+| Variable | Valor |
+|---|---|
+| `DJANGO_SECRET_KEY` | Una clave larga y secreta |
+| `DJANGO_DEBUG` | `False` |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Datos del servidor MySQL de Azure |
+| `DB_SSL` | `true` |
+
+Azure define `WEBSITE_HOSTNAME`, y con ella Django acepta el dominio `*.azurewebsites.net`.
+
 ### Sin Docker (XAMPP)
 
 Con el MySQL de XAMPP encendido y la base `canaco` creada:

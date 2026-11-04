@@ -43,6 +43,17 @@ docker compose logs -f web    # ver errores de Django
 - La primera vez que se crea el volumen, MariaDB importa `docker/initdb/canaco.sql` (respaldo de la base de XAMPP, no se sube a git).
 - Superusuario para `/admin`: `superadmin`.
 - Después de cambiar `home/models.py`: `docker compose exec web python manage.py makemigrations` y luego `... migrate`.
+- Si cambias `requirements.txt`, reconstruye el contenedor: `docker compose up -d --build`.
+
+## Producción (Azure)
+
+La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El código ya está preparado; en tu Mac todo sigue igual porque los valores por defecto son los de desarrollo.
+
+- `canaco/settings.py` lee de variables de entorno: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`False` en producción) y `DB_SSL=true` para Azure Database for MySQL. Azure define `WEBSITE_HOSTNAME` y con eso se agregan solos `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y el encabezado HTTPS del proxy.
+- Los estáticos los sirve **whitenoise** desde `staticfiles/` (`collectstatic`, no se sube a git). No guardes nada a mano en `staticfiles/`; edita `static/`.
+- Las fotos de `media/` se sirven con `django.views.static.serve` en `canaco/urls.py`, también con `DEBUG=False`.
+- `startup.sh` es el arranque de producción: `migrate`, `collectstatic` y **gunicorn**. Es el `CMD` del `Dockerfile`; `docker-compose.yml` lo reemplaza por `runserver` para desarrollo.
+- No crees recursos en Azure sin confirmarlo con el usuario: gastan su crédito de Azure for Students.
 
 ## Usuarios y permisos
 
