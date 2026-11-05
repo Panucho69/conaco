@@ -52,7 +52,9 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 - `canaco/settings.py` lee de variables de entorno: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`False` en producción) y `DB_SSL=true` para Azure Database for MySQL. Azure define `WEBSITE_HOSTNAME` y con eso se agregan solos `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y el encabezado HTTPS del proxy.
 - Dominio propio: el usuario va a usar un dominio de **Namecheap** (el `.me` gratis del GitHub Student Pack) apuntando a la App Service, en un plan B1 o superior (F1 no admite dominios propios). Los dominios se pasan en `DJANGO_CUSTOM_DOMAINS`, separados por coma.
 - Los estáticos los sirve **whitenoise** desde `staticfiles/` (`collectstatic`, no se sube a git). No guardes nada a mano en `staticfiles/`; edita `static/`.
-- Las fotos de `media/` se sirven con `django.views.static.serve` en `canaco/urls.py`, también con `DEBUG=False`.
+- Las fotos de `media/` se sirven con `django.views.static.serve` en `canaco/urls.py`, también con `DEBUG=False`. En Azure, `DJANGO_MEDIA_ROOT=/home/media` (disco permanente); `startup.sh` copia ahí las fotos que vengan en el paquete sin pisar las existentes.
+- Recursos creados (grupo `rg-canaco`, región `mexicocentral`, la única permitida por Azure for Students con MySQL): App Service `canaco-samuel` (plan `plan-canaco`, B1 Linux, Python 3.12, arranque `sh startup.sh`) y MySQL flexible `canaco-samuel-db` (B1ms, MySQL 8). Las credenciales están en `azure.env` en la carpeta del usuario (no se sube a git).
+- Para volver a publicar: desde la carpeta del proyecto, `az webapp deploy -g rg-canaco -n canaco-samuel --src-path paquete.zip --type zip` con un zip del proyecto (incluye `media/`, sin `canaco_env/`, `.git/` ni `staticfiles/`).
 - `startup.sh` es el arranque de producción: `migrate`, `collectstatic` y **gunicorn**. Es el `CMD` del `Dockerfile`; `docker-compose.yml` lo reemplaza por `runserver` para desarrollo.
 - No crees recursos en Azure sin confirmarlo con el usuario: gastan su crédito de Azure for Students.
 

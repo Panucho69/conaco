@@ -11,3 +11,6 @@ staticfiles/
 
 # Respaldo de la base que importa Docker (tiene usuarios y contraseñas)
 docker/initdb/*.sql
+
+# Credenciales de Azure (no se suben)
+azure.env
