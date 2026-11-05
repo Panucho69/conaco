@@ -77,6 +77,7 @@ En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y g
 | `DJANGO_DEBUG` | `False` |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Datos del servidor MySQL de Azure |
 | `DB_SSL` | `true` |
+| `DJANGO_CUSTOM_DOMAINS` | Dominio propio, por ejemplo `canaco.me,www.canaco.me` |
 
 Azure define `WEBSITE_HOSTNAME`, y con ella Django acepta el dominio `*.azurewebsites.net`.
 

@@ -40,6 +40,11 @@ if os.environ.get('WEBSITE_HOSTNAME'):
     # Azure atiende HTTPS y le pasa la petición a Django por HTTP
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Dominios propios (el de Namecheap), separados por coma: DJANGO_CUSTOM_DOMAINS=canaco.me,www.canaco.me
+for dominio in filter(None, os.environ.get('DJANGO_CUSTOM_DOMAINS', '').split(',')):
+    ALLOWED_HOSTS.append(dominio.strip())
+    CSRF_TRUSTED_ORIGINS.append(f'https://{dominio.strip()}')
+
 
 # Application definition
 

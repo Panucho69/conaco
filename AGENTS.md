@@ -50,6 +50,7 @@ docker compose logs -f web    # ver errores de Django
 La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El código ya está preparado; en tu Mac todo sigue igual porque los valores por defecto son los de desarrollo.
 
 - `canaco/settings.py` lee de variables de entorno: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`False` en producción) y `DB_SSL=true` para Azure Database for MySQL. Azure define `WEBSITE_HOSTNAME` y con eso se agregan solos `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y el encabezado HTTPS del proxy.
+- Dominio propio: el usuario va a usar un dominio de **Namecheap** (el `.me` gratis del GitHub Student Pack) apuntando a la App Service, en un plan B1 o superior (F1 no admite dominios propios). Los dominios se pasan en `DJANGO_CUSTOM_DOMAINS`, separados por coma.
 - Los estáticos los sirve **whitenoise** desde `staticfiles/` (`collectstatic`, no se sube a git). No guardes nada a mano en `staticfiles/`; edita `static/`.
 - Las fotos de `media/` se sirven con `django.views.static.serve` en `canaco/urls.py`, también con `DEBUG=False`.
 - `startup.sh` es el arranque de producción: `migrate`, `collectstatic` y **gunicorn**. Es el `CMD` del `Dockerfile`; `docker-compose.yml` lo reemplaza por `runserver` para desarrollo.
