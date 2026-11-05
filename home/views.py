@@ -1,5 +1,3 @@
-import os
-
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -179,8 +177,9 @@ def crud_perfil(request):
         if foto:
             if perfil.foto_perfil:
                 archivo_anterior = perfil.foto_perfil
-                if archivo_anterior.ruta and hasattr(archivo_anterior.ruta, 'path') and os.path.exists(archivo_anterior.ruta.path):
-                    os.remove(archivo_anterior.ruta.path)
+                # Borra el archivo en el almacenamiento que esté configurado (disco local o Azure)
+                if archivo_anterior.ruta and not str(archivo_anterior.ruta).startswith('uploads/profile-default'):
+                    archivo_anterior.ruta.delete(save=False)
                 archivo_anterior.delete()
 
             perfil.foto_perfil = guardar_archivo(foto, user)

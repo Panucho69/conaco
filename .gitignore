@@ -14,3 +14,4 @@ docker/initdb/*.sql
 
 # Credenciales de Azure (no se suben)
 azure.env
+.azure-ip

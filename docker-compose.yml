@@ -4,6 +4,10 @@
 #
 #   Sitio:       http://localhost:8000
 #   phpMyAdmin:  http://localhost:8081
+#
+# Si existe el archivo .env (no se sube a git) con los datos de Azure, "web" y phpMyAdmin
+# usan la base MySQL y las fotos de Azure: lo mismo que el sitio publicado.
+# Sin .env usan la base local del servicio "db".
 
 services:
   db:
@@ -34,10 +38,13 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       DB_NAME: canaco
-      DB_USER: canaco
-      DB_PASSWORD: canaco
-      DB_HOST: db
+      DB_USER: ${DB_USER:-canaco}
+      DB_PASSWORD: ${DB_PASSWORD:-canaco}
+      DB_HOST: ${DB_HOST:-db}
       DB_PORT: "3306"
+      DB_SSL: ${DB_SSL:-false}
+      AZURE_STORAGE_ACCOUNT: ${AZURE_STORAGE_ACCOUNT:-}
+      AZURE_STORAGE_KEY: ${AZURE_STORAGE_KEY:-}
     volumes:
       # Comparte el código (y media/) con tu carpeta: lo que edites en VS Code se ve al instante
       - .:/app
@@ -51,9 +58,11 @@ services:
     image: phpmyadmin:5
     restart: unless-stopped
     environment:
-      PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: canaco_root
+      PMA_HOST: ${DB_HOST:-db}
+      PMA_USER: ${DB_USER:-root}
+      PMA_PASSWORD: ${DB_PASSWORD:-canaco_root}
+      PMA_SSL: ${PMA_SSL:-0}
+      PMA_SSL_VERIFY: 0
     ports:
       - "8081:80"
     depends_on:

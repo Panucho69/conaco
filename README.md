@@ -67,6 +67,8 @@ docker compose exec web python manage.py createsuperuser
 
 Si cambia `requirements.txt`, reconstruye con `docker compose up -d --build`.
 
+Si existe un archivo `.env` con los datos de Azure, el Docker local usa la misma base y las mismas fotos que el sitio publicado en Azure. Sin él, usa la base local.
+
 ### Producción (Azure)
 
 En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y gunicorn) y se configura con variables de entorno:
@@ -77,6 +79,7 @@ En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y g
 | `DJANGO_DEBUG` | `False` |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Datos del servidor MySQL de Azure |
 | `DB_SSL` | `true` |
+| `AZURE_STORAGE_ACCOUNT`, `AZURE_STORAGE_KEY` | Cuenta de Azure Blob Storage para las fotos |
 | `DJANGO_CUSTOM_DOMAINS` | Dominio propio, por ejemplo `canaco.me,www.canaco.me` |
 
 Azure define `WEBSITE_HOSTNAME`, y con ella Django acepta el dominio `*.azurewebsites.net`.

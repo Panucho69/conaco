@@ -10,3 +10,5 @@ db.sqlite3
 .vscode
 .DS_Store
 staticfiles
+azure.env
+.azure-ip

@@ -166,6 +166,18 @@ STORAGES = {
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
 }
 
+# Fotos subidas en Azure Blob Storage: así el sitio de Azure y el Docker local ven las mismas
+if os.environ.get('AZURE_STORAGE_ACCOUNT'):
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.azure_storage.AzureStorage',
+        'OPTIONS': {
+            'account_name': os.environ['AZURE_STORAGE_ACCOUNT'],
+            'account_key': os.environ['AZURE_STORAGE_KEY'],
+            'azure_container': 'media',
+            'overwrite_files': False,
+        },
+    }
+
 MEDIA_URL = '/media/'
 # En Azure apunta a /home/media, que no se borra al reiniciar ni al volver a subir la app
 MEDIA_ROOT = os.environ.get('DJANGO_MEDIA_ROOT', BASE_DIR / 'media')
