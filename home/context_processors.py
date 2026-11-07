@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from home.models import Categoria, Publicacion
 
 
@@ -5,4 +7,5 @@ def global_categorias(request):
     return {
         'global_categorias': Categoria.objects.all().order_by('nombre'),
         'global_recientes': Publicacion.objects.filter(estado=Publicacion.ESTADO_PUBLICADO).order_by('-createdat')[:3],
+        'google_analytics_id': settings.GOOGLE_ANALYTICS_ID,
     }

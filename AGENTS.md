@@ -53,6 +53,7 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 
 - `canaco/settings.py` lee de variables de entorno: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`False` en producción) y `DB_SSL=true` para Azure Database for MySQL. Azure define `WEBSITE_HOSTNAME` y con eso se agregan solos `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` y el encabezado HTTPS del proxy.
 - Dominio propio: el usuario va a usar un dominio de **Namecheap** (el `.me` gratis del GitHub Student Pack) apuntando a la App Service, en un plan B1 o superior (F1 no admite dominios propios). Los dominios se pasan en `DJANGO_CUSTOM_DOMAINS`, separados por coma.
+- **Google Analytics (GA4):** `partials/base.html` carga la etiqueta solo si existe la variable `GOOGLE_ANALYTICS_ID` (por ejemplo `G-XXXXXXXXXX`). Se define únicamente en la App Service, no en `.env`, para que las visitas locales no cuenten.
 - Los estáticos los sirve **whitenoise** desde `staticfiles/` (`collectstatic`, no se sube a git). No guardes nada a mano en `staticfiles/`; edita `static/`.
 - Fotos subidas: si están las variables `AZURE_STORAGE_ACCOUNT` y `AZURE_STORAGE_KEY`, se guardan en Azure Blob Storage (cuenta `canacosamuelmedia`, contenedor público `media`) con `django-storages`; si no, en `media/` local. No uses rutas de disco (`.path`, `os.remove`) con archivos subidos: usa `default_storage` o `archivo.ruta.delete(save=False)`.
 - Recursos creados (grupo `rg-canaco`, región `mexicocentral`, la única permitida por Azure for Students con MySQL): App Service `canaco-samuel` (plan `plan-canaco`, B1 Linux, Python 3.12, arranque `sh startup.sh`) MySQL flexible `canaco-samuel-db` (B1ms, MySQL 8) y la cuenta de almacenamiento `canacosamuelmedia`. Las credenciales están en `azure.env` en la carpeta del usuario (no se sube a git).
@@ -85,7 +86,7 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 - Los nombres de rutas están en `home/urls.py` (`app_name = "home"`). La de noticias del panel es `crud_noticias`.
 - Las acciones del panel siguen el patrón `crud_<modulo>/<int:pk>/<accion>/` (por ejemplo `crud_noticias/5/editar/`); las que borran (`eliminar_*`) solo actúan con POST. El detalle público de una noticia es `home:noticia_detalle` y el de una categoría `home:categoria_detalle`.
 - Las noticias tienen `estado` (`borrador` o `publicado`); en plantillas compara con `noticia.estado == 'publicado'`. Los visitantes solo ven noticias publicadas y comentarios aprobados.
-- Todas las plantillas reciben `global_categorias` (todas las categorías) y `global_recientes` (las 3 noticias publicadas más recientes) del context processor `home/context_processors.py`. Úsalas en lugar de pasarlas desde cada vista; el header y el footer ya las usan.
+- Todas las plantillas reciben `global_categorias` (todas las categorías), `global_recientes` (las 3 noticias publicadas más recientes) y `google_analytics_id` del context processor `home/context_processors.py`. Úsalas en lugar de pasarlas desde cada vista; el header y el footer ya las usan.
 - El menú lateral marca la opción activa comparando `request.resolver_match.url_name`; si agregas una página del panel, agrega su nombre a la condición del enlace correspondiente en `partials/sidebar.html`.
 
 ## Laboratorios nuevos

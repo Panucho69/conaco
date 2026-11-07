@@ -182,6 +182,9 @@ MEDIA_URL = '/media/'
 # En Azure apunta a /home/media, que no se borra al reiniciar ni al volver a subir la app
 MEDIA_ROOT = os.environ.get('DJANGO_MEDIA_ROOT', BASE_DIR / 'media')
 
+# Google Analytics (GA4): solo se define en Azure, así las visitas locales no cuentan
+GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '')
+
 LOGIN_URL = 'home:login'
 LOGIN_REDIRECT_URL = 'home:index'
 LOGOUT_REDIRECT_URL = 'home:login'
