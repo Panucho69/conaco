@@ -1,4 +1,4 @@
-Django == 4.2.30
+Django == 5.2.17
 django-mysql == 4.19.0
 mysqlclient == 2.2.7
 gunicorn == 23.0.0
