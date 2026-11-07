@@ -70,6 +70,15 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 - Login y logout usan las vistas de Django (`LoginView`, `LogoutView`); el logout se hace con un formulario POST a `home:logout`.
 - Los archivos subidos se guardan con `guardar_archivo()` en `media/uploads/` y se registran en el modelo `Archivo`; en plantillas se muestran con `archivo.display_url`. La carpeta `media/` no se sube a git.
 
+## Seguridad
+
+- **Contraseñas:** toda contraseña nueva (registro, cambio de contraseña, crear/editar usuario) pasa por `errores_contrasena()` en `home/views.py`, que aplica `AUTH_PASSWORD_VALIDATORS`. No uses `set_password()` ni `create_user()` sin validarla antes.
+- **Imágenes subidas:** valida con `errores_imagenes()` (usa `home/seguridad.py`: solo JPG, PNG, GIF o WEBP reales, máximo 5 MB) **antes** de guardar nada.
+- **Roles:** un editor (`is_staff`) no puede crear, ascender, editar, bloquear ni eliminar administradores; se revisa con `puede_gestionar()`. Respétalo en vistas nuevas de usuarios.
+- **Acciones del panel solo por POST:** cualquier acción que cambie datos (publicar, aprobar, bloquear, eliminar) se hace con un `<form method="post">` con `{% csrf_token %}`, nunca con un enlace `<a href>`. La vista solo actúa si `request.method == 'POST'`.
+- **Intentos de inicio de sesión:** `django-axes` bloquea 15 minutos tras 5 fallos con el mismo usuario desde la misma IP (página `home/bloqueado.html`). Para desbloquear: `docker compose exec web python manage.py axes_reset`. La IP real en Azure la calcula `obtener_ip_cliente()`.
+- **Producción:** con `WEBSITE_HOSTNAME` se activan HTTPS obligatorio, cookies seguras y HSTS (30 días). `python manage.py check --deploy` no debe mostrar avisos con esas variables.
+
 ## Plantilla visual (ZenBlog)
 
 El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-template/) (Bootstrap 5.3).

@@ -63,9 +63,12 @@
                         <a href="{% url 'home:editar_usuario' user.id %}" class="btn btn-info btn-sm">Editar</a>
                     </td>
                     <td>
-                        <a href="{% url 'home:bloquear_usuario' user.id %}" class="btn btn-warning btn-sm">
-                            {% if user.is_active %}Bloquear{% else %}Desbloquear{% endif %}
-                        </a>
+                        <form method="post" action="{% url 'home:bloquear_usuario' user.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                {% if user.is_active %}Bloquear{% else %}Desbloquear{% endif %}
+                            </button>
+                        </form>
                     </td>
                     <td>
                         <form method="post" action="{% url 'home:eliminar_usuario' user.id %}">

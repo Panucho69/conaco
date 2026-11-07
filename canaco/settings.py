@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,13 @@ if os.environ.get('WEBSITE_HOSTNAME'):
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['WEBSITE_HOSTNAME']}")
     # Azure atiende HTTPS y le pasa la petición a Django por HTTP
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # Solo HTTPS: cookies de sesión y CSRF cifradas, redirección y HSTS (30 días)
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+    # Subdominios y "preload" son para un dominio propio; no aplican a *.azurewebsites.net
+    SILENCED_SYSTEM_CHECKS = ['security.W005', 'security.W021']
 
 # Dominios propios (el de Namecheap), separados por coma: DJANGO_CUSTOM_DOMAINS=canaco.me,www.canaco.me
 for dominio in filter(None, os.environ.get('DJANGO_CUSTOM_DOMAINS', '').split(',')):
@@ -56,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +76,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Debe ir al final: bloquea a quien falle demasiados inicios de sesión
+    'axes.middleware.AxesMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# django-axes: 5 intentos fallidos con el mismo usuario desde la misma IP bloquean 15 minutos
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = 'home/bloqueado.html'
+AXES_CLIENT_IP_CALLABLE = 'home.seguridad.obtener_ip_cliente'
 
 ROOT_URLCONF = 'canaco.urls'
 
@@ -184,6 +208,9 @@ MEDIA_ROOT = os.environ.get('DJANGO_MEDIA_ROOT', BASE_DIR / 'media')
 
 # Google Analytics (GA4): solo se define en Azure, así las visitas locales no cuentan
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '')
+
+# Bootstrap usa "danger" (rojo) para los errores, no "error"
+MESSAGE_TAGS = {40: 'danger'}
 
 LOGIN_URL = 'home:login'
 LOGIN_REDIRECT_URL = 'home:index'

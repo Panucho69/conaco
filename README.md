@@ -85,6 +85,15 @@ En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y g
 
 Azure define `WEBSITE_HOSTNAME`, y con ella Django acepta el dominio `*.azurewebsites.net`.
 
+### Seguridad
+
+- Contraseñas validadas con las reglas de Django (mínimo 8 caracteres, no comunes, no solo números).
+- Bloqueo de 15 minutos tras 5 intentos fallidos de inicio de sesión (`django-axes`). Desbloquear: `python manage.py axes_reset`.
+- Solo se aceptan imágenes reales (JPG, PNG, GIF, WEBP) de hasta 5 MB.
+- Los editores no pueden crear ni modificar administradores.
+- Las acciones del panel que cambian datos solo funcionan con formularios POST protegidos con CSRF.
+- En producción: HTTPS obligatorio, cookies seguras y HSTS.
+
 ### Sin Docker (XAMPP)
 
 Con el MySQL de XAMPP encendido y la base `canaco` creada:

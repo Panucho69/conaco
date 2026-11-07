@@ -4,3 +4,4 @@ mysqlclient == 2.2.7
 gunicorn == 23.0.0
 whitenoise == 6.8.2
 django-storages[azure] == 1.14.4
+django-axes == 8.3.1

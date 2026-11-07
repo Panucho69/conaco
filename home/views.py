@@ -2,11 +2,14 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Archivo, Categoria, Comentario, GaleriaPublicacion, Perfil, Publicacion
+from .seguridad import validar_imagen
 
 
 def es_operador(user):
@@ -14,6 +17,29 @@ def es_operador(user):
 
 
 operador_required = user_passes_test(es_operador, login_url='home:login')
+
+
+def puede_gestionar(actor, usuario):
+    # Solo un administrador puede modificar, bloquear o eliminar a otro administrador
+    return actor.is_superuser or not usuario.is_superuser
+
+
+def errores_contrasena(password, user=None):
+    # Aplica las reglas de AUTH_PASSWORD_VALIDATORS (largo mínimo, no muy común, etc.)
+    try:
+        validate_password(password, user)
+    except ValidationError as error:
+        return ' '.join(error.messages)
+    return None
+
+
+def errores_imagenes(*uploads):
+    for upload in uploads:
+        if upload:
+            error = validar_imagen(upload)
+            if error:
+                return error
+    return None
 
 
 def guardar_archivo(upload, user):
@@ -110,8 +136,17 @@ def sign_up(request):
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
 
+        if not username:
+            messages.error(request, 'El usuario es obligatorio.')
+            return redirect('home:sign_up')
+
         if password1 != password2:
             messages.error(request, 'Las contraseñas no coinciden.')
+            return redirect('home:sign_up')
+
+        error = errores_contrasena(password1, User(username=username, email=email, first_name=first_name))
+        if error:
+            messages.error(request, error)
             return redirect('home:sign_up')
 
         if User.objects.filter(username=username).exists():
@@ -159,6 +194,10 @@ def crud_perfil(request):
 
         if not username:
             messages.error(request, 'El usuario es obligatorio.')
+            return redirect('home:crud_perfil')
+        error = errores_imagenes(foto)
+        if error:
+            messages.error(request, error)
             return redirect('home:crud_perfil')
         if User.objects.filter(username=username).exclude(pk=user.pk).exists():
             messages.error(request, 'Ese nombre de usuario ya está en uso.')
@@ -209,6 +248,11 @@ def crud_cambiar_contrasena(request):
             messages.error(request, 'Las nuevas contraseñas no coinciden.')
             return redirect('home:crud_cambiar_contrasena')
 
+        error = errores_contrasena(nueva, user)
+        if error:
+            messages.error(request, error)
+            return redirect('home:crud_cambiar_contrasena')
+
         user.set_password(nueva)
         user.save()
         update_session_auth_hash(request, user)
@@ -231,6 +275,10 @@ def crud_noticias(request):
 def crear_publicacion(request):
     categorias = Categoria.objects.all().order_by('nombre')
     if request.method == 'POST':
+        error = errores_imagenes(request.FILES.get('imagen_portada'), *request.FILES.getlist('galeria'))
+        if error:
+            messages.error(request, error)
+            return redirect('home:crear_publicacion')
         publicacion = Publicacion.objects.create(
             titulo=request.POST.get('titulo', '').strip(),
             resumen=request.POST.get('resumen', '').strip(),
@@ -255,6 +303,10 @@ def editar_publicacion(request, pk):
     publicacion = get_object_or_404(Publicacion, pk=pk)
     categorias = Categoria.objects.all().order_by('nombre')
     if request.method == 'POST':
+        error = errores_imagenes(request.FILES.get('imagen_portada'), *request.FILES.getlist('galeria'))
+        if error:
+            messages.error(request, error)
+            return redirect('home:editar_publicacion', pk=publicacion.pk)
         publicacion.titulo = request.POST.get('titulo', '').strip()
         publicacion.resumen = request.POST.get('resumen', '').strip()
         publicacion.contenido = request.POST.get('contenido', '').strip()
@@ -277,8 +329,9 @@ def editar_publicacion(request, pk):
 @operador_required
 def publicar_publicacion(request, pk):
     publicacion = get_object_or_404(Publicacion, pk=pk)
-    publicacion.estado = Publicacion.ESTADO_PUBLICADO if publicacion.estado != Publicacion.ESTADO_PUBLICADO else Publicacion.ESTADO_BORRADOR
-    publicacion.save()
+    if request.method == 'POST':
+        publicacion.estado = Publicacion.ESTADO_PUBLICADO if publicacion.estado != Publicacion.ESTADO_PUBLICADO else Publicacion.ESTADO_BORRADOR
+        publicacion.save()
     return redirect('home:crud_noticias')
 
 
@@ -300,16 +353,18 @@ def crud_comentarios(request):
 @operador_required
 def aprobar_comentario(request, pk):
     comentario = get_object_or_404(Comentario, pk=pk)
-    comentario.estado = Comentario.ESTADO_APROBADO
-    comentario.save()
+    if request.method == 'POST':
+        comentario.estado = Comentario.ESTADO_APROBADO
+        comentario.save()
     return redirect('home:crud_comentarios')
 
 
 @operador_required
 def bloquear_comentario(request, pk):
     comentario = get_object_or_404(Comentario, pk=pk)
-    comentario.estado = Comentario.ESTADO_BLOQUEADO
-    comentario.save()
+    if request.method == 'POST':
+        comentario.estado = Comentario.ESTADO_BLOQUEADO
+        comentario.save()
     return redirect('home:crud_comentarios')
 
 
@@ -383,6 +438,13 @@ def crear_usuario(request):
         if User.objects.filter(username=username).exists():
             messages.error(request, 'El usuario ya existe.')
             return redirect('home:crear_usuario')
+        if request.POST.get('rol') == 'administrador' and not request.user.is_superuser:
+            messages.error(request, 'Solo un administrador puede crear otros administradores.')
+            return redirect('home:crear_usuario')
+        error = errores_contrasena(password1, User(username=username, email=email, first_name=first_name))
+        if error:
+            messages.error(request, error)
+            return redirect('home:crear_usuario')
 
         user = User.objects.create_user(username=username, email=email, password=password1)
         user.first_name = first_name
@@ -404,8 +466,14 @@ def crear_usuario(request):
 @operador_required
 def editar_usuario(request, pk):
     usuario = get_object_or_404(User, pk=pk)
+    if not puede_gestionar(request.user, usuario):
+        messages.error(request, 'Solo un administrador puede editar a otro administrador.')
+        return redirect('home:crud_usuarios')
     perfil, _ = Perfil.objects.get_or_create(user=usuario)
     if request.method == 'POST':
+        if request.POST.get('rol') == 'administrador' and not request.user.is_superuser:
+            messages.error(request, 'Solo un administrador puede asignar el rol de administrador.')
+            return redirect('home:editar_usuario', pk=usuario.pk)
         usuario.username = request.POST.get('username', usuario.username).strip()
         usuario.email = request.POST.get('email', usuario.email).strip()
         usuario.first_name = request.POST.get('first_name', usuario.first_name).strip()
@@ -422,6 +490,10 @@ def editar_usuario(request, pk):
             if password1 != password2:
                 messages.error(request, 'Las contraseñas no coinciden.')
                 return redirect('home:editar_usuario', pk=usuario.pk)
+            error = errores_contrasena(password1, usuario)
+            if error:
+                messages.error(request, error)
+                return redirect('home:editar_usuario', pk=usuario.pk)
             usuario.set_password(password1)
         usuario.save()
         perfil.save()
@@ -436,7 +508,7 @@ def editar_usuario(request, pk):
 @operador_required
 def bloquear_usuario(request, pk):
     usuario = get_object_or_404(User, pk=pk)
-    if usuario != request.user:
+    if request.method == 'POST' and usuario != request.user and puede_gestionar(request.user, usuario):
         usuario.is_active = not usuario.is_active
         usuario.save()
     return redirect('home:crud_usuarios')
@@ -445,6 +517,6 @@ def bloquear_usuario(request, pk):
 @operador_required
 def eliminar_usuario(request, pk):
     usuario = get_object_or_404(User, pk=pk)
-    if request.method == 'POST' and usuario != request.user:
+    if request.method == 'POST' and usuario != request.user and puede_gestionar(request.user, usuario):
         usuario.delete()
     return redirect('home:crud_usuarios')

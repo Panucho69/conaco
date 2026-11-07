@@ -1,0 +1,14 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}Acceso bloqueado{% endblock %}
+
+{% block content %}
+<div class="account-page">
+    <div class="account-card account-card-sm text-center">
+        <h3>Acceso bloqueado temporalmente</h3>
+        <p>Se registraron demasiados intentos fallidos de inicio de sesión.</p>
+        <p>Por seguridad, espera <strong>15 minutos</strong> antes de volver a intentarlo.</p>
+        <a href="{% url 'home:index' %}" class="btn btn-primary mt-2">Volver al inicio</a>
+    </div>
+</div>
+{% endblock %}
