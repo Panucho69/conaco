@@ -78,6 +78,7 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 - **Acciones del panel solo por POST:** cualquier acción que cambie datos (publicar, aprobar, bloquear, eliminar) se hace con un `<form method="post">` con `{% csrf_token %}`, nunca con un enlace `<a href>`. La vista solo actúa si `request.method == 'POST'`.
 - **Intentos de inicio de sesión:** `django-axes` bloquea 15 minutos tras 5 fallos con el mismo usuario desde la misma IP (página `home/bloqueado.html`). Para desbloquear: `docker compose exec web python manage.py axes_reset`. La IP real en Azure la calcula `obtener_ip_cliente()`.
 - **CSRF fallido:** `CSRF_FAILURE_VIEW` muestra `home/csrf_fallido.html` (página "La página expiró") y registra el motivo, IP, Origin y navegador en el log. Para verlo en vivo: `az webapp log tail -g rg-canaco -n canaco-samuel`.
+- **Dependencias:** Django está fijado en la última versión de la rama 4.2 (`4.2.30`). Si Dependabot avisa de vulnerabilidades, sube a la última `4.2.x`; las alertas que solo tienen corrección en 5.x son de GeoDjango, GDAL o la caché de páginas, que el proyecto no usa.
 - **Producción:** con `WEBSITE_HOSTNAME` se activan HTTPS obligatorio, cookies seguras y HSTS (30 días). `python manage.py check --deploy` no debe mostrar avisos con esas variables.
 
 ## Plantilla visual (ZenBlog)
