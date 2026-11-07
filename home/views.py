@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -9,7 +11,9 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Archivo, Categoria, Comentario, GaleriaPublicacion, Perfil, Publicacion
-from .seguridad import validar_imagen
+from .seguridad import obtener_ip_cliente, validar_imagen
+
+logger = logging.getLogger(__name__)
 
 
 def es_operador(user):
@@ -68,6 +72,17 @@ def index(request):
 
 def contactanos(request):
     return render(request, 'home/contactanos.html')
+
+
+def csrf_fallido(request, reason=''):
+    # Reemplaza la página amarilla de Django (CSRF_FAILURE_VIEW) y deja el motivo en los logs de Azure
+    logger.warning(
+        'CSRF fallido en %s %s: %s | ip=%s origin=%s referer=%s cookie_csrf=%s navegador=%s',
+        request.method, request.path, reason, obtener_ip_cliente(request),
+        request.META.get('HTTP_ORIGIN', '-'), 'sí' if request.META.get('HTTP_REFERER') else 'no',
+        'sí' if 'csrftoken' in request.COOKIES else 'no', request.META.get('HTTP_USER_AGENT', '-')[:120],
+    )
+    return render(request, 'home/csrf_fallido.html', status=403)
 
 
 def categoria(request, pk=None):

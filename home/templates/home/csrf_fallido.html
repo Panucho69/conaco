@@ -1,0 +1,16 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}La página expiró{% endblock %}
+
+{% block content %}
+<div class="account-page">
+    <div class="account-card account-card-sm text-center">
+        <h3>La página expiró</h3>
+        <p>No pudimos verificar el formulario que enviaste. Suele pasar cuando la página estuvo abierta mucho tiempo, iniciaste sesión en otra pestaña o regresaste con el botón "atrás".</p>
+        <p>Vuelve a abrir la página e inténtalo de nuevo.</p>
+        <a href="{{ request.path }}" class="btn btn-primary mt-2">Intentar de nuevo</a>
+        <a href="{% url 'home:index' %}" class="btn btn-outline-secondary mt-2">Ir al inicio</a>
+        <p class="mt-3 text-muted"><small>Si usas el navegador de WhatsApp o Instagram y sigue pasando, abre el enlace en Safari o Chrome.</small></p>
+    </div>
+</div>
+{% endblock %}

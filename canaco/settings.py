@@ -209,6 +209,22 @@ MEDIA_ROOT = os.environ.get('DJANGO_MEDIA_ROOT', BASE_DIR / 'media')
 # Google Analytics (GA4): solo se define en Azure, así las visitas locales no cuentan
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '')
 
+# Página amigable cuando un formulario falla la verificación CSRF (en lugar de la de Django)
+CSRF_FAILURE_VIEW = 'home.views.csrf_fallido'
+
+# Manda los avisos de Django a la consola: en Azure se ven en el Log stream
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {
+        'django.security': {'handlers': ['console'], 'level': 'WARNING'},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR'},
+        'home': {'handlers': ['console'], 'level': 'INFO'},
+        'axes': {'handlers': ['console'], 'level': 'WARNING'},
+    },
+}
+
 # Bootstrap usa "danger" (rojo) para los errores, no "error"
 MESSAGE_TAGS = {40: 'danger'}
 

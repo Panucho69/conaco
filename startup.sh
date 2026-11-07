@@ -9,4 +9,5 @@ if [ -n "$DJANGO_MEDIA_ROOT" ] && [ -d media ]; then
     cp -rn media/. "$DJANGO_MEDIA_ROOT"/
 fi
 
-gunicorn canaco.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120
+# --access-logfile - deja cada visita (método, ruta y código) en el Log stream de Azure
+gunicorn canaco.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 --access-logfile -
