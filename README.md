@@ -79,7 +79,7 @@ En producción la app arranca con `startup.sh` (migraciones, `collectstatic` y g
 | `DJANGO_DEBUG` | `False` |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Datos del servidor MySQL de Azure |
 | `DB_SSL` | `true` |
-| `GOOGLE_ANALYTICS_ID` | ID de medición de Google Analytics (`G-...`), opcional |
+| `GOOGLE_ANALYTICS_ID` | ID de Google Analytics (`G-...`) o de Tag Manager (`GTM-...`), opcional |
 | `AZURE_STORAGE_ACCOUNT`, `AZURE_STORAGE_KEY` | Cuenta de Azure Blob Storage para las fotos |
 | `DJANGO_CUSTOM_DOMAINS` | Dominio propio, por ejemplo `canaco.me,www.canaco.me` |
 
