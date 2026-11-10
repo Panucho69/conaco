@@ -87,6 +87,7 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 
 - `static/css/main.css` es el CSS de la plantilla. No lo edites para estilos del proyecto; los colores se cambian en sus variables `:root`.
 - Los estilos propios del proyecto (panel, perfil, login, registro) van en `static/css/canaco.css`.
+- Login y registro usan el diseño `.acceso` de `canaco.css` (foto a la izquierda y formulario a la derecha, campos `.campo` con ícono) y `static/js/acceso.js` (mostrar contraseña y requisitos en vivo). Si el registro falla, la vista vuelve a mostrar el formulario con lo que ya se escribió (`datos`) y marca el campo con error (`campo_error`); no hagas `redirect` en ese caso.
 - Conserva el crédito "Diseñado por BootstrapMade" del footer: lo exige la licencia gratuita.
 - Imágenes de ejemplo en `static/img/`. La foto de perfil por defecto es `static/uploads/profile-default.jpg`.
 

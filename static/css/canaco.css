@@ -306,6 +306,323 @@
 }
 
 /*--------------------------------------------------------------
+# Inicio de sesión y registro (.acceso)
+--------------------------------------------------------------*/
+.acceso {
+  padding: 48px 16px 64px;
+}
+
+.acceso-marco {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  max-width: 1040px;
+  margin: 0 auto;
+  background: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%);
+  box-shadow: 0 18px 40px -24px rgba(31, 41, 55, 0.45);
+  overflow: hidden;
+}
+
+/* Foto con el mensaje: el único elemento llamativo de la página */
+.acceso-portada {
+  position: relative;
+  min-height: 420px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+}
+
+.acceso-portada::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(28, 34, 44, 0.92) 10%, rgba(28, 34, 44, 0.35) 65%, rgba(28, 34, 44, 0.15));
+}
+
+.acceso-portada-texto {
+  position: relative;
+  padding: 36px 34px;
+  color: #fff;
+}
+
+.acceso-portada-texto h2 {
+  color: #fff;
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+
+.acceso-portada-texto p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.acceso-portada-texto ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  font-family: var(--nav-font);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.acceso-portada-texto li i {
+  margin-right: 8px;
+  color: #c9d3e2;
+}
+
+.acceso-cuerpo {
+  padding: 44px 48px;
+}
+
+.acceso-titulo {
+  font-size: 2.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.acceso-sub {
+  font-family: var(--nav-font);
+  font-size: 14px;
+  color: color-mix(in srgb, var(--default-color), transparent 40%);
+  margin-bottom: 26px;
+}
+
+.acceso-sub a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.acceso-form {
+  display: grid;
+  gap: 18px;
+}
+
+.acceso-form fieldset {
+  display: grid;
+  gap: 14px;
+}
+
+.acceso-form fieldset + fieldset {
+  margin-top: 10px;
+}
+
+.acceso-form legend {
+  float: none;
+  font-family: var(--heading-font);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  margin-bottom: 4px;
+}
+
+.campo label {
+  display: block;
+  font-family: var(--nav-font);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.campo .opcional {
+  font-weight: 400;
+  color: color-mix(in srgb, var(--default-color), transparent 45%);
+}
+
+.campo input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  font-family: var(--nav-font);
+  font-size: 15px;
+  color: var(--default-color);
+  background: color-mix(in srgb, var(--default-color), transparent 97%);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
+  border-radius: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.campo input:focus {
+  outline: none;
+  background: var(--surface-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 80%);
+}
+
+.campo small {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--nav-font);
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--default-color), transparent 45%);
+}
+
+.campo-icono {
+  position: relative;
+}
+
+.campo-icono > i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: color-mix(in srgb, var(--default-color), transparent 50%);
+  pointer-events: none;
+}
+
+.campo-icono input {
+  padding-left: 40px;
+}
+
+.campo-clave input {
+  padding-right: 46px;
+}
+
+.ver-clave {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: color-mix(in srgb, var(--default-color), transparent 40%);
+}
+
+.ver-clave:hover {
+  color: var(--accent-color);
+}
+
+.ver-clave:focus-visible {
+  outline: 2px solid var(--accent-color);
+}
+
+.campo-error input {
+  border-color: #b4232c;
+  background: #fdf3f3;
+}
+
+.campos-dobles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.reglas-clave {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  margin: 8px 0 0;
+  font-family: var(--nav-font);
+  font-size: 12px;
+}
+
+.reglas-clave li {
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--default-color), transparent 93%);
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.reglas-clave li::before {
+  content: "\f28a"; /* bi-circle */
+  font-family: "bootstrap-icons";
+  margin-right: 5px;
+  font-size: 10px;
+}
+
+.reglas-clave li.cumple {
+  background: #e3f1e7;
+  color: #1f6b3a;
+}
+
+.reglas-clave li.cumple::before {
+  content: "\f633"; /* bi-check-lg */
+}
+
+.coincide.si { color: #1f6b3a; }
+.coincide.no { color: #b4232c; }
+
+.btn-acceso {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  font-family: var(--nav-font);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--contrast-color);
+  background: var(--accent-color);
+  border: 0;
+  border-radius: 6px;
+}
+
+.btn-acceso:hover,
+.btn-acceso:focus-visible {
+  color: var(--contrast-color);
+  background: color-mix(in srgb, var(--accent-color), #000 20%);
+}
+
+@media (max-width: 860px) {
+  .acceso-marco {
+    grid-template-columns: 1fr;
+  }
+
+  .acceso-portada {
+    min-height: 190px;
+  }
+
+  .acceso-portada-texto {
+    padding: 24px 22px;
+  }
+
+  .acceso-portada-texto h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .acceso-portada-texto ul {
+    display: none;
+  }
+
+  .acceso-cuerpo {
+    padding: 28px 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .acceso {
+    padding: 0 0 40px;
+  }
+
+  .acceso-marco {
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .campos-dobles {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campo input,
+  .reglas-clave li {
+    transition: none;
+  }
+}
+
+/*--------------------------------------------------------------
 # Ajustes para celular
 --------------------------------------------------------------*/
 @media (max-width: 575.98px) {

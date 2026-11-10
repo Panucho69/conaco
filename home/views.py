@@ -151,26 +151,26 @@ def sign_up(request):
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
 
+        # Si algo falla se vuelve a mostrar el formulario con lo que ya escribió (menos las contraseñas)
+        error, campo = None, None
         if not username:
-            messages.error(request, 'El usuario es obligatorio.')
-            return redirect('home:sign_up')
+            error, campo = 'Escribe un nombre de usuario.', 'username'
+        elif User.objects.filter(username=username).exists():
+            error, campo = 'Ese nombre de usuario ya está en uso. Prueba con otro.', 'username'
+        elif email and User.objects.filter(email=email).exists():
+            error, campo = 'Ya hay una cuenta con ese correo. Inicia sesión o usa otro correo.', 'email'
+        elif password1 != password2:
+            error, campo = 'Las contraseñas no coinciden.', 'password2'
+        else:
+            error = errores_contrasena(password1, User(username=username, email=email, first_name=first_name))
+            campo = 'password1' if error else None
 
-        if password1 != password2:
-            messages.error(request, 'Las contraseñas no coinciden.')
-            return redirect('home:sign_up')
-
-        error = errores_contrasena(password1, User(username=username, email=email, first_name=first_name))
         if error:
             messages.error(request, error)
-            return redirect('home:sign_up')
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'El nombre de usuario ya está en uso.')
-            return redirect('home:sign_up')
-
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'El correo electrónico ya está registrado.')
-            return redirect('home:sign_up')
+            return render(request, 'home/sign_up.html', {
+                'datos': request.POST,
+                'campo_error': campo,
+            })
 
         user = User.objects.create_user(username=username, email=email, password=password1)
         user.first_name = first_name
