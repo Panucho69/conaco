@@ -1,41 +1,61 @@
 {% extends 'partials/sidebar_base.html' %}
 {% load static %}
-{% block title %}Cambiar Contraseña{% endblock %}
+{% block title %}Cambiar contraseña{% endblock %}
 
 {% block content %}
-<div class="profile-page">
-    <div class="profile-edit-card">
-        <h3>Cambiar contraseña</h3>
-        <p>Esta acción modifica la contraseña de tu cuenta actual: <strong>{{ request.user.username }}</strong>.</p>
-
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-            </div>
-            {% endfor %}
-        {% endif %}
-
-        <form method="POST" class="profile-edit-form">
-            {% csrf_token %}
-            <div class="profile-form-row">
-                <label for="actual">Contraseña actual</label>
-                <input type="password" id="actual" name="actual" required>
-            </div>
-            <div class="profile-form-row">
-                <label for="nueva">Nueva contraseña</label>
-                <input type="password" id="nueva" name="nueva" required>
-            </div>
-            <div class="profile-form-row">
-                <label for="confirmar">Confirmar contraseña</label>
-                <input type="password" id="confirmar" name="confirmar" required>
-            </div>
-            <div class="profile-form-actions">
-                <button type="submit" class="btn btn-primary">Actualizar contraseña</button>
-                <a href="{% url 'home:perfil' %}" class="btn btn-outline-secondary">Volver a mi perfil</a>
-            </div>
-        </form>
+<div class="panel-cabecera">
+    <div>
+        <h1>Cambiar contraseña</h1>
+        <p>Después de cambiarla seguirás con la sesión abierta en este dispositivo.</p>
     </div>
 </div>
+
+{% include 'partials/mensajes.html' %}
+
+<form method="POST" class="panel-tarjeta acceso-form" style="max-width: 560px;">
+    {% csrf_token %}
+    <input type="text" name="username" value="{{ request.user.username }}" autocomplete="username" hidden>
+
+    <div class="campo{% if campo_error == 'actual' %} campo-error{% endif %}">
+        <label for="actual">Contraseña actual</label>
+        <div class="campo-icono campo-clave">
+            <i class="bi bi-lock" aria-hidden="true"></i>
+            <input type="password" id="actual" name="actual" autocomplete="current-password" required
+                   {% if campo_error == 'actual' or not campo_error %}autofocus{% endif %}>
+            <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
+        </div>
+    </div>
+
+    <div class="campo{% if campo_error == 'nueva' %} campo-error{% endif %}">
+        <label for="nueva">Contraseña nueva</label>
+        <div class="campo-icono campo-clave">
+            <i class="bi bi-shield-lock" aria-hidden="true"></i>
+            <input type="password" id="nueva" name="nueva" autocomplete="new-password" required
+                   data-reglas data-usuario="{{ request.user.username }}" aria-describedby="reglas-clave"
+                   {% if campo_error == 'nueva' %}autofocus{% endif %}>
+            <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
+        </div>
+        <ul class="reglas-clave" id="reglas-clave">
+            <li data-regla="largo">Al menos 8 caracteres</li>
+            <li data-regla="letras">No solo números</li>
+            <li data-regla="usuario">Distinta a tu usuario</li>
+        </ul>
+    </div>
+
+    <div class="campo{% if campo_error == 'confirmar' %} campo-error{% endif %}">
+        <label for="confirmar">Repite la contraseña nueva</label>
+        <div class="campo-icono campo-clave">
+            <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+            <input type="password" id="confirmar" name="confirmar" autocomplete="new-password" required data-repite="nueva"
+                   {% if campo_error == 'confirmar' %}autofocus{% endif %}>
+            <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
+        </div>
+        <small class="coincide" aria-live="polite"></small>
+    </div>
+
+    <div class="formulario-acciones">
+        <a href="{% url 'home:perfil' %}" class="boton-secundario">Cancelar</a>
+        <button type="submit" class="boton-principal">Cambiar contraseña</button>
+    </div>
+</form>
 {% endblock content %}

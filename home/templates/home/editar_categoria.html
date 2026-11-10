@@ -1,23 +1,24 @@
 {% extends 'partials/sidebar_base.html' %}
 {% load static %}
-{% block title %}Editar Categoría{% endblock %}
+{% block title %}Editar categoría{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="card shadow rounded">
-        <div class="card-body">
-            <h3 class="mb-4 text-center">Editar Categoría</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control" value="{{ categoria.nombre }}" required>
-                </div>
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                    <a href="{% url 'home:crud_categorias' %}" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-            </form>
-        </div>
+<div class="panel-cabecera">
+    <div>
+        <a href="{% url 'home:crud_categorias' %}" class="volver"><i class="bi bi-arrow-left" aria-hidden="true"></i> Categorías</a>
+        <h1>Cambiar nombre</h1>
     </div>
 </div>
+
+<form method="POST" class="panel-tarjeta acceso-form" style="max-width: 560px;">
+    {% csrf_token %}
+    <div class="campo">
+        <label for="nombre">Nombre de la categoría</label>
+        <input type="text" id="nombre" name="nombre" value="{{ categoria.nombre }}" maxlength="60" required autofocus>
+    </div>
+    <div class="formulario-acciones">
+        <a href="{% url 'home:crud_categorias' %}" class="boton-secundario">Cancelar</a>
+        <button type="submit" class="boton-principal">Guardar</button>
+    </div>
+</form>
 {% endblock content %}

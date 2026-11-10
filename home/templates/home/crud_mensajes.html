@@ -1,0 +1,50 @@
+{% extends 'partials/sidebar_base.html' %}
+{% load static %}
+{% block title %}Mensajes{% endblock %}
+
+{% block content %}
+<div class="panel-cabecera">
+    <div>
+        <h1>Mensajes</h1>
+        <p>Lo que los visitantes envían desde la página de contacto. Responde directo a su correo.</p>
+    </div>
+    <a href="{% url 'home:contactanos' %}" class="boton-secundario" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Ver la página de contacto</a>
+</div>
+
+{% include 'partials/mensajes.html' %}
+
+<div class="lista-tarjetas">
+    {% for mensaje in mensajes_contacto %}
+    <article class="tarjeta-texto{% if not mensaje.leido %} resaltada{% endif %}">
+        <header>
+            <div>
+                <strong>{{ mensaje.nombre }}{% if not mensaje.leido %} <span class="estado estado-espera">Nuevo</span>{% endif %}</strong>
+                <span class="secundario">{{ mensaje.correo }} · {{ mensaje.createdat|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="acciones">
+                <a href="mailto:{{ mensaje.correo }}?subject={% if mensaje.asunto %}{{ 'Re: '|add:mensaje.asunto|urlencode }}{% else %}{{ 'Tu mensaje a Canaco'|urlencode }}{% endif %}" class="accion" title="Responder por correo" aria-label="Responder por correo"><i class="bi bi-reply"></i></a>
+                <form method="post" action="{% url 'home:leer_mensaje' mensaje.id %}">
+                    {% csrf_token %}
+                    {% if mensaje.leido %}
+                    <button type="submit" class="accion" title="Marcar como no leído" aria-label="Marcar como no leído"><i class="bi bi-envelope"></i></button>
+                    {% else %}
+                    <button type="submit" class="accion" title="Marcar como leído" aria-label="Marcar como leído"><i class="bi bi-envelope-open"></i></button>
+                    {% endif %}
+                </form>
+                <form method="post" action="{% url 'home:eliminar_mensaje' mensaje.id %}" data-confirmar="¿Eliminar el mensaje de {{ mensaje.nombre }}?">
+                    {% csrf_token %}
+                    <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </header>
+        {% if mensaje.asunto %}<h2 class="h5 mb-2">{{ mensaje.asunto }}</h2>{% endif %}
+        <blockquote>{{ mensaje.mensaje }}</blockquote>
+    </article>
+    {% empty %}
+    <div class="panel-tarjeta tabla-vacia">
+        <i class="bi bi-envelope" aria-hidden="true"></i>
+        Aún no llegan mensajes. Aparecerán aquí cuando alguien escriba desde la página de contacto.
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

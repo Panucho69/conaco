@@ -1,11 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1> Estas en la página contactanos </h1>
-</body>
-</html>
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block title %}Contacto{% endblock %}
+
+{% block content %}
+<div class="contacto">
+    <div class="contacto-intro">
+        <h1>Escríbenos</h1>
+        <p>¿Viste un error en una noticia, tienes una historia que contar o quieres colaborar con Canaco? Mándanos un mensaje y te respondemos a tu correo.</p>
+        <ul class="contacto-datos">
+            <li>
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                <div><strong>Villahermosa, Tabasco</strong>Instituto Tecnológico de Villahermosa</div>
+            </li>
+            <li>
+                <i class="bi bi-envelope-check" aria-hidden="true"></i>
+                <div><strong>Tu mensaje llega al equipo editorial</strong>Te contestamos al correo que escribas.</div>
+            </li>
+            <li>
+                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                <div><strong>¿Quieres opinar sobre una noticia?</strong>Deja un comentario al final de la noticia{% if not request.user.is_authenticated %}; necesitas <a href="{% url 'home:sign_up' %}">una cuenta</a>{% endif %}.</div>
+            </li>
+        </ul>
+    </div>
+
+    <div>
+        {% include 'partials/mensajes.html' %}
+
+        <form method="POST" class="panel-tarjeta acceso-form">
+            {% csrf_token %}
+            <div class="campo-trampa" aria-hidden="true">
+                <label for="sitio_web">No llenes este campo</label>
+                <input type="text" id="sitio_web" name="sitio_web" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div class="campos-dobles">
+                <div class="campo{% if campo_error == 'nombre' %} campo-error{% endif %}">
+                    <label for="nombre">Tu nombre</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ datos.nombre|default:'' }}" maxlength="120" required autocomplete="name">
+                </div>
+                <div class="campo{% if campo_error == 'correo' %} campo-error{% endif %}">
+                    <label for="correo">Tu correo</label>
+                    <input type="email" id="correo" name="correo" value="{{ datos.correo|default:'' }}" required autocomplete="email">
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="asunto">Asunto <span class="opcional">(opcional)</span></label>
+                <input type="text" id="asunto" name="asunto" value="{{ datos.asunto|default:'' }}" maxlength="150">
+            </div>
+
+            <div class="campo{% if campo_error == 'mensaje' %} campo-error{% endif %}">
+                <div class="etiqueta-con-contador">
+                    <label for="mensaje">Mensaje</label>
+                    <small id="contador-mensaje"></small>
+                </div>
+                <textarea id="mensaje" name="mensaje" rows="7" maxlength="5000" minlength="10" required data-contador="#contador-mensaje">{{ datos.mensaje|default:'' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn-acceso"><i class="bi bi-send me-1" aria-hidden="true"></i> Enviar mensaje</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

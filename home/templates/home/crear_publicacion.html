@@ -1,88 +1,125 @@
 {% extends 'partials/sidebar_base.html' %}
 {% load static %}
-{% block title %}{% if publicacion %}Editar Publicación{% else %}Crear Publicación{% endif %}{% endblock %}
+{% block title %}{% if publicacion %}Editar noticia{% else %}Nueva noticia{% endif %}{% endblock %}
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
-<style>
-    .ql-editor.ql-blank::before {
-        left: 27px;
-        right: 15px;
-        font-style: normal;
-    }
-</style>
 {% endblock extra_css %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4 text-center">{% if publicacion %}Editar Publicación{% else %}Crear Nueva Publicación{% endif %}</h1>
-    <form class="formEditor" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="titulo" class="form-label">Título</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" value="{{ publicacion.titulo|default:'' }}" placeholder="Título de la publicación" required>
+<div class="panel-cabecera">
+    <div>
+        <a href="{% url 'home:crud_noticias' %}" class="volver"><i class="bi bi-arrow-left" aria-hidden="true"></i> Noticias</a>
+        <h1>{% if publicacion %}Editar noticia{% else %}Nueva noticia{% endif %}</h1>
+    </div>
+    {% if publicacion %}
+    <a href="{% url 'home:noticia_detalle' publicacion.id %}" class="boton-secundario" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Ver en el sitio</a>
+    {% endif %}
+</div>
+
+{% include 'partials/mensajes.html' %}
+
+<form class="editor-noticia acceso-form" method="POST" enctype="multipart/form-data" id="form-noticia">
+    {% csrf_token %}
+
+    <div class="panel-tarjeta acceso-form">
+        <div class="campo campo-titulo{% if campo_error == 'titulo' %} campo-error{% endif %}">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" name="titulo" value="{{ datos.titulo|default:'' }}" maxlength="180" required
+                   placeholder="Un título claro y corto" {% if not publicacion or campo_error == 'titulo' %}autofocus{% endif %}>
         </div>
 
-        <div class="mb-3">
-            <label for="resumen" class="form-label">Resumen</label>
-            <textarea class="form-control" id="resumen" name="resumen" rows="3" required>{{ publicacion.resumen|default:'' }}</textarea>
+        <div class="campo{% if campo_error == 'resumen' %} campo-error{% endif %}">
+            <div class="etiqueta-con-contador">
+                <label for="resumen">Resumen</label>
+                <small id="contador-resumen"></small>
+            </div>
+            <textarea id="resumen" name="resumen" rows="3" maxlength="600" required data-contador="#contador-resumen"
+                      placeholder="Dos o tres líneas que se muestran en la portada y en las categorías">{{ datos.resumen|default:'' }}</textarea>
         </div>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="categoria" class="form-label">Categoría</label>
-                <select class="form-control" id="categoria" name="categoria">
+        <div class="campo editor-contenido">
+            <label for="editor">Contenido</label>
+            <div id="editor">{{ datos.contenido|default:''|safe }}</div>
+            <input type="hidden" name="contenido" id="contenido">
+        </div>
+    </div>
+
+    <aside>
+        <div class="panel-tarjeta acceso-form">
+            <fieldset>
+                <legend>Publicación</legend>
+                <div class="opciones opciones-dos">
+                    <div class="opcion">
+                        <input type="radio" name="estado" id="estado-borrador" value="borrador" {% if datos.estado != 'publicado' %}checked{% endif %}>
+                        <label for="estado-borrador">Borrador<small>Solo el equipo la ve</small></label>
+                    </div>
+                    <div class="opcion">
+                        <input type="radio" name="estado" id="estado-publicado" value="publicado" {% if datos.estado == 'publicado' %}checked{% endif %}>
+                        <label for="estado-publicado">Publicada<small>Visible para todos</small></label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="campo">
+                <label for="categoria">Categoría</label>
+                <select id="categoria" name="categoria">
                     <option value="">Sin categoría</option>
                     {% for categoria in categorias %}
-                    <option value="{{ categoria.id }}" {% if publicacion and publicacion.categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                    <option value="{{ categoria.id }}" {% if datos.categoria == categoria.id|stringformat:'s' %}selected{% endif %}>{{ categoria.nombre }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="estado" class="form-label">Estado</label>
-                <select class="form-control" id="estado" name="estado">
-                    <option value="borrador" {% if publicacion and publicacion.estado == 'borrador' %}selected{% endif %}>Borrador</option>
-                    <option value="publicado" {% if publicacion and publicacion.estado == 'publicado' %}selected{% endif %}>Publicado</option>
-                </select>
-            </div>
+
+            <button type="submit" class="boton-principal">{% if publicacion %}Guardar cambios{% else %}Guardar noticia{% endif %}</button>
         </div>
 
-        <div class="mb-3">
-            <label for="imagen_portada" class="form-label">Imagen de portada</label>
-            <input type="file" class="form-control" id="imagen_portada" name="imagen_portada" accept="image/*">
-            {% if publicacion and publicacion.imagen_portada %}
-            <small class="text-muted">Actual: {{ publicacion.imagen_portada.nombre }}</small>
+        <div class="panel-tarjeta{% if campo_error == 'imagenes' %} campo-error{% endif %}">
+            <h2>Imagen de portada</h2>
+            <label class="zona-imagen">
+                <span><i class="bi bi-image" aria-hidden="true"></i>{% if publicacion.imagen_portada %}Cambiar la portada{% else %}Elige o suelta una imagen{% endif %}</span>
+                <img id="vista-portada" alt="" {% if publicacion.imagen_portada %}src="{{ publicacion.imagen_portada.display_url }}"{% else %}hidden{% endif %}>
+                <input type="file" name="imagen_portada" accept="image/jpeg,image/png,image/gif,image/webp" data-vista-previa="#vista-portada" aria-label="Imagen de portada">
+            </label>
+            <span class="archivo-elegido">JPG, PNG, GIF o WEBP, hasta 5 MB.</span>
+        </div>
+
+        <div class="panel-tarjeta subir-imagen">
+            <h2>Galería</h2>
+            <input type="file" id="galeria" name="galeria" accept="image/jpeg,image/png,image/gif,image/webp" multiple data-vista-previa="#vista-galeria">
+            <label for="galeria" class="boton-secundario w-100"><i class="bi bi-images" aria-hidden="true"></i> Agregar imágenes</label>
+            <span class="archivo-elegido"></span>
+            <div class="miniaturas" id="vista-galeria"></div>
+            {% if publicacion and publicacion.galeria.exists %}
+            <span class="archivo-elegido">Ya en la galería:</span>
+            <div class="miniaturas">
+                {% for foto in publicacion.galeria.all %}
+                <img src="{{ foto.archivo.display_url }}" alt="{{ foto.archivo.nombre }}" loading="lazy">
+                {% endfor %}
+            </div>
             {% endif %}
         </div>
-
-        <div class="mb-3">
-            <label for="editor" class="form-label">Contenido</label>
-            <div id="editor" class="form-control" style="height: 300px;">
-                {% if publicacion %}{{ publicacion.contenido|safe }}{% endif %}
-            </div>
-            <input type="hidden" name="contenido" id="contenido">
-        </div>
-
-        <div class="mb-3">
-            <label for="galeria" class="form-label">Galería de imágenes</label>
-            <input type="file" class="form-control" id="galeria" name="galeria" accept="image/*" multiple>
-        </div>
-
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">Guardar Publicación</button>
-            <a href="{% url 'home:crud_noticias' %}" class="btn btn-outline-secondary">Cancelar</a>
-        </div>
-    </form>
-</div>
+    </aside>
+</form>
 {% endblock content %}
+
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.min.js"></script>
 <script>
     const quill = new Quill('#editor', {
         theme: 'snow',
-        placeholder: 'Escribe tu contenido aquí...'
+        placeholder: 'Escribe aquí la noticia completa…',
+        modules: {
+            toolbar: [
+                [{ header: [2, 3, false] }],
+                ['bold', 'italic', 'underline', 'link'],
+                [{ list: 'ordered' }, { list: 'bullet' }, 'blockquote'],
+                ['clean']
+            ]
+        }
     });
 
-    document.querySelector('.formEditor').addEventListener('submit', function () {
-        document.querySelector('#contenido').value = quill.root.innerHTML;
+    document.getElementById('form-noticia').addEventListener('submit', function () {
+        document.getElementById('contenido').value = quill.getText().trim() ? quill.root.innerHTML : '';
     });
 </script>
 {% endblock extra_js %}

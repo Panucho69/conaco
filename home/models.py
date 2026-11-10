@@ -120,3 +120,20 @@ class Comentario(models.Model):
         managed = True
         db_table = 'comentario'
         verbose_name_plural = 'Comentarios'
+
+
+class MensajeContacto(models.Model):
+    nombre = models.CharField(max_length=120)
+    correo = models.EmailField()
+    asunto = models.CharField(max_length=150, blank=True)
+    mensaje = models.TextField()
+    leido = models.BooleanField(default=False)
+    createdat = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'mensaje_contacto'
+        verbose_name_plural = 'Mensajes de contacto'
+
+    def __str__(self):
+        return f'{self.nombre}: {self.asunto or self.mensaje[:40]}'

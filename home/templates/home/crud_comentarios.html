@@ -1,61 +1,72 @@
 {% extends 'partials/sidebar_base.html' %}
 {% load static %}
 {% block title %}Comentarios{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4 text-center">Comentarios</h1>
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-primary">
-                <tr>
-                    <th>Autor</th>
-                    <th>Noticia</th>
-                    <th>Fecha</th>
-                    <th>Contenido</th>
-                    <th>Estado</th>
-                    <th colspan="3"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for comentario in comentarios %}
-                <tr>
-                    <td>{{ comentario.user.username }}</td>
-                    <td>{{ comentario.publicacion.titulo }}</td>
-                    <td>{{ comentario.createdat|date:"Y-m-d H:i" }}</td>
-                    <td>{{ comentario.contenido }}</td>
-                    <td>
-                        {% if comentario.estado == 'aprobado' %}
-                        <span class="badge bg-success">Aprobado</span>
-                        {% elif comentario.estado == 'bloqueado' %}
-                        <span class="badge bg-danger">Bloqueado</span>
-                        {% else %}
-                        <span class="badge bg-warning text-dark">Pendiente</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <form method="post" action="{% url 'home:aprobar_comentario' comentario.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success btn-sm">Aprobar</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method="post" action="{% url 'home:bloquear_comentario' comentario.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning btn-sm">Bloquear</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method="post" action="{% url 'home:eliminar_comentario' comentario.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="8" class="text-center">No hay comentarios.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="panel-cabecera">
+    <div>
+        <h1>Comentarios</h1>
+        <p>Los comentarios nuevos esperan tu aprobación antes de aparecer en la noticia.</p>
     </div>
+</div>
+
+{% include 'partials/mensajes.html' %}
+
+<nav class="filtros" aria-label="Filtrar por estado">
+    {% for valor, nombre, total in filtros %}
+    <a href="?estado={{ valor }}" class="{% if filtro == valor %}activo{% endif %}" {% if filtro == valor %}aria-current="page"{% endif %}>{{ nombre }}<span>{{ total }}</span></a>
+    {% endfor %}
+</nav>
+
+<div class="lista-tarjetas">
+    {% for comentario in comentarios %}
+    <article class="tarjeta-texto{% if comentario.estado == 'pendiente' %} resaltada{% endif %}">
+        <header>
+            {% if comentario.user.perfil.foto_perfil %}
+            <img src="{{ comentario.user.perfil.foto_perfil.display_url }}" alt="">
+            {% else %}
+            <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
+            {% endif %}
+            <div>
+                <strong>{{ comentario.user.username }}</strong>
+                <span class="secundario">{{ comentario.createdat|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="acciones">
+                {% if comentario.estado != 'aprobado' %}
+                <form method="post" action="{% url 'home:aprobar_comentario' comentario.id %}">
+                    {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                    <button type="submit" class="accion" title="Aprobar" aria-label="Aprobar"><i class="bi bi-check-lg"></i></button>
+                </form>
+                {% endif %}
+                {% if comentario.estado != 'bloqueado' %}
+                <form method="post" action="{% url 'home:bloquear_comentario' comentario.id %}">
+                    {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                    <button type="submit" class="accion" title="Bloquear" aria-label="Bloquear"><i class="bi bi-slash-circle"></i></button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'home:eliminar_comentario' comentario.id %}" data-confirmar="¿Eliminar este comentario de {{ comentario.user.username }}?">
+                    {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                    <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </header>
+        <blockquote>{{ comentario.contenido }}</blockquote>
+        <footer>
+            {% if comentario.estado == 'aprobado' %}
+            <span class="estado estado-ok">Aprobado</span>
+            {% elif comentario.estado == 'bloqueado' %}
+            <span class="estado estado-no">Bloqueado</span>
+            {% else %}
+            <span class="estado estado-espera">Pendiente</span>
+            {% endif %}
+            en <a href="{% url 'home:noticia_detalle' comentario.publicacion.id %}">{{ comentario.publicacion.titulo }}</a>
+        </footer>
+    </article>
+    {% empty %}
+    <div class="panel-tarjeta tabla-vacia">
+        <i class="bi bi-chat-left" aria-hidden="true"></i>
+        {% if filtro %}No hay comentarios en este estado.{% else %}Todavía nadie ha comentado.{% endif %}
+    </div>
+    {% endfor %}
 </div>
 {% endblock content %}

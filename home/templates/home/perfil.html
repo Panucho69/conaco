@@ -1,54 +1,62 @@
 {% extends 'partials/sidebar_base.html' %}
 {% load static %}
-{% block title %}Mi Perfil{% endblock %}
+{% block title %}Mi perfil{% endblock %}
 
 {% block content %}
-<div class="profile-page" style="flex-direction: column; align-items: center;">
-    {% if messages %}
-        <div style="width: 100%; max-width: 820px;">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-        {% endfor %}
-        </div>
-    {% endif %}
-    <div class="profile-card">
-        <div class="profile-photo-wrap">
-            {% if perfil_usuario.foto_perfil %}
-            <img src="{{ perfil_usuario.foto_perfil.display_url }}" alt="Foto de perfil" class="profile-photo">
+{% include 'partials/mensajes.html' %}
+
+<div class="panel-tarjeta">
+    <div class="perfil-cabecera">
+        {% if perfil_usuario.foto_perfil %}
+        <img src="{{ perfil_usuario.foto_perfil.display_url }}" alt="Tu foto de perfil">
+        {% else %}
+        <img src="{% static 'uploads/profile-default.jpg' %}" alt="Sin foto de perfil">
+        {% endif %}
+        <div>
+            <h1>{{ request.user.get_full_name|default:request.user.username }}</h1>
+            <span class="usuario">@{{ request.user.username }}</span>
+            {% if request.user.is_superuser %}
+            <span class="estado estado-ok">Administrador</span>
+            {% elif request.user.is_staff %}
+            <span class="estado estado-neutro">Editor</span>
             {% else %}
-            <img src="{% static 'uploads/profile-default.jpg' %}" alt="Foto por defecto" class="profile-photo">
+            <span class="estado estado-neutro">Colaborador</span>
             {% endif %}
-        </div>
-
-        <div class="profile-grid">
-            <div class="profile-field">
-                <span>Usuario:</span>
-                <strong>{{ request.user.username }}</strong>
+            <div class="formulario-acciones">
+                <a href="{% url 'home:crud_perfil' %}" class="boton-principal"><i class="bi bi-pencil" aria-hidden="true"></i> Editar perfil</a>
+                <a href="{% url 'home:crud_cambiar_contrasena' %}" class="boton-secundario"><i class="bi bi-key" aria-hidden="true"></i> Cambiar contraseña</a>
             </div>
-            <div class="profile-field">
-                <span>Nombre:</span>
-                <strong>{{ request.user.first_name|default:"Sin registrar" }}</strong>
-            </div>
-            <div class="profile-field">
-                <span>Paterno:</span>
-                <strong>{{ perfil_usuario.apellido_paterno|default:"Sin registrar" }}</strong>
-            </div>
-            <div class="profile-field">
-                <span>Materno:</span>
-                <strong>{{ perfil_usuario.apellido_materno|default:"Sin registrar" }}</strong>
-            </div>
-            <div class="profile-field profile-field-wide">
-                <span>Correo electrónico:</span>
-                <strong>{{ request.user.email|default:"Sin registrar" }}</strong>
-            </div>
-        </div>
-
-        <div class="profile-actions">
-            <a href="{% url 'home:crud_perfil' %}" class="btn btn-success">Editar mi perfil</a>
         </div>
     </div>
+</div>
+
+<div class="panel-tarjeta">
+    <h2>Tus datos</h2>
+    <dl class="perfil-datos">
+        <div>
+            <dt>Nombre</dt>
+            <dd>{% if request.user.first_name %}{{ request.user.first_name }}{% else %}<span class="vacio">Sin registrar</span>{% endif %}</dd>
+        </div>
+        <div>
+            <dt>Correo electrónico</dt>
+            <dd>{% if request.user.email %}{{ request.user.email }}{% else %}<span class="vacio">Sin registrar</span>{% endif %}</dd>
+        </div>
+        <div>
+            <dt>Apellido paterno</dt>
+            <dd>{% if perfil_usuario.apellido_paterno %}{{ perfil_usuario.apellido_paterno }}{% else %}<span class="vacio">Sin registrar</span>{% endif %}</dd>
+        </div>
+        <div>
+            <dt>Apellido materno</dt>
+            <dd>{% if perfil_usuario.apellido_materno %}{{ perfil_usuario.apellido_materno }}{% else %}<span class="vacio">Sin registrar</span>{% endif %}</dd>
+        </div>
+        <div>
+            <dt>Miembro desde</dt>
+            <dd>{{ request.user.date_joined|date:"j \d\e F \d\e Y"|lower }}</dd>
+        </div>
+        <div>
+            <dt>Último acceso</dt>
+            <dd>{{ request.user.last_login|date:"j \d\e F, H:i"|lower|default:"—" }}</dd>
+        </div>
+    </dl>
 </div>
 {% endblock content %}

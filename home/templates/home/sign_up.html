@@ -77,7 +77,7 @@
                         <div class="campo-icono campo-clave">
                             <i class="bi bi-lock" aria-hidden="true"></i>
                             <input type="password" id="password1" name="password1" autocomplete="new-password" required
-                                   aria-describedby="reglas-clave" {% if campo_error == 'password1' %}autofocus{% endif %}>
+                                   aria-describedby="reglas-clave" data-reglas data-usuario-de="username" {% if campo_error == 'password1' %}autofocus{% endif %}>
                             <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
                         </div>
                         <ul class="reglas-clave" id="reglas-clave">
@@ -90,7 +90,7 @@
                         <label for="password2">Repite la contraseña</label>
                         <div class="campo-icono campo-clave">
                             <i class="bi bi-lock-fill" aria-hidden="true"></i>
-                            <input type="password" id="password2" name="password2" autocomplete="new-password" required
+                            <input type="password" id="password2" name="password2" autocomplete="new-password" required data-repite="password1"
                                    {% if campo_error == 'password2' %}autofocus{% endif %}>
                             <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="bi bi-eye"></i></button>
                         </div>
@@ -104,7 +104,3 @@
     </div>
 </div>
 {% endblock content %}
-
-{% block extra_js %}
-<script src="{% static 'js/acceso.js' %}"></script>
-{% endblock extra_js %}

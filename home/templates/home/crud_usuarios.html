@@ -3,87 +3,81 @@
 {% block title %}Usuarios{% endblock %}
 
 {% block content %}
-<div class="container mt-2">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h1 class="mb-1">Gestión de usuarios</h1>
-            <p class="text-muted mb-0">Crear, editar, bloquear o eliminar cuentas del sistema.</p>
-        </div>
-        <a href="{% url 'home:crear_usuario' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Crear usuario
-        </a>
+<div class="panel-cabecera">
+    <div>
+        <h1>Usuarios</h1>
+        <p>{{ usuarios|length }} cuentas. Un usuario bloqueado no puede iniciar sesión.</p>
     </div>
+    <a href="{% url 'home:crear_usuario' %}" class="boton-principal"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</a>
+</div>
 
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-        {% endfor %}
-    {% endif %}
+{% include 'partials/mensajes.html' %}
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Usuario</th>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th colspan="3"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in usuarios %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.first_name|default:"-" }}</td>
-                    <td>{{ user.email|default:"-" }}</td>
-                    <td>
-                        {% if user.is_superuser %}
-                            Administrador
-                        {% elif user.is_staff %}
-                            Editor
+<div class="panel-tarjeta p-0">
+    <table class="tabla-panel">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th><span class="visually-hidden">Acciones</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in usuarios %}
+            <tr>
+                <td class="celda-principal">
+                    <div class="noticia-fila">
+                        {% if user.perfil.foto_perfil %}
+                        <img src="{{ user.perfil.foto_perfil.display_url }}" alt="" style="width:40px;height:40px;border-radius:50%;">
                         {% else %}
-                            Colaborador
+                        <img src="{% static 'uploads/profile-default.jpg' %}" alt="" style="width:40px;height:40px;border-radius:50%;">
                         {% endif %}
-                    </td>
-                    <td>
-                        {% if user.is_active %}
-                        <span class="badge bg-success">Activo</span>
-                        {% else %}
-                        <span class="badge bg-danger">Bloqueado</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'home:editar_usuario' user.id %}" class="btn btn-info btn-sm">Editar</a>
-                    </td>
-                    <td>
+                        <div>
+                            <strong>{{ user.username }}</strong>{% if user == request.user %} <span class="secundario d-inline">(tú)</span>{% endif %}
+                            <span class="secundario">{{ user.get_full_name|default:"Sin nombre" }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td data-etiqueta="Correo">{{ user.email|default:"—" }}</td>
+                <td data-etiqueta="Rol">
+                    {% if user.is_superuser %}Administrador{% elif user.is_staff %}Editor{% else %}Colaborador{% endif %}
+                </td>
+                <td data-etiqueta="Estado">
+                    {% if user.is_active %}
+                    <span class="estado estado-ok">Activo</span>
+                    {% else %}
+                    <span class="estado estado-no">Bloqueado</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user != request.user and not user.is_superuser or user != request.user and request.user.is_superuser %}
+                    <div class="acciones">
+                        <a href="{% url 'home:editar_usuario' user.id %}" class="accion" title="Editar" aria-label="Editar"><i class="bi bi-pencil"></i></a>
                         <form method="post" action="{% url 'home:bloquear_usuario' user.id %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-warning btn-sm">
-                                {% if user.is_active %}Bloquear{% else %}Desbloquear{% endif %}
-                            </button>
+                            {% if user.is_active %}
+                            <button type="submit" class="accion" title="Bloquear" aria-label="Bloquear"><i class="bi bi-lock"></i></button>
+                            {% else %}
+                            <button type="submit" class="accion" title="Desbloquear" aria-label="Desbloquear"><i class="bi bi-unlock"></i></button>
+                            {% endif %}
                         </form>
-                    </td>
-                    <td>
-                        <form method="post" action="{% url 'home:eliminar_usuario' user.id %}">
+                        <form method="post" action="{% url 'home:eliminar_usuario' user.id %}"
+                              data-confirmar="¿Eliminar la cuenta de {{ user.username }}? También se borran sus comentarios.">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
                         </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="9" class="text-center">No hay usuarios registrados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                    {% elif user == request.user %}
+                    <div class="acciones">
+                        <a href="{% url 'home:crud_perfil' %}" class="accion" title="Editar mi perfil" aria-label="Editar mi perfil"><i class="bi bi-pencil"></i></a>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock content %}

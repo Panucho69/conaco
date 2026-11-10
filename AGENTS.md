@@ -68,6 +68,7 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 - Vistas que requieren sesión: `@login_required`. Vistas del panel de administración (noticias, comentarios, categorías, usuarios): `@operador_required`, definido en `home/views.py` (usuario staff y activo).
 - El menú lateral solo muestra las opciones de administración a usuarios staff.
 - Login y logout usan las vistas de Django (`LoginView`, `LogoutView`); el logout se hace con un formulario POST a `home:logout`.
+- **Contacto:** `home:contactanos` guarda los mensajes en el modelo `MensajeContacto` (tiene un campo trampa `sitio_web` contra spam) y el equipo los lee en `home:crud_mensajes`. El menú lateral muestra cuántos hay sin leer (`mensajes_sin_leer`, del context processor).
 - Los archivos subidos se guardan con `guardar_archivo()` en `media/uploads/` y se registran en el modelo `Archivo`; en plantillas se muestran con `archivo.display_url`. La carpeta `media/` no se sube a git.
 
 ## Seguridad
@@ -87,7 +88,9 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 
 - `static/css/main.css` es el CSS de la plantilla. No lo edites para estilos del proyecto; los colores se cambian en sus variables `:root`.
 - Los estilos propios del proyecto (panel, perfil, login, registro) van en `static/css/canaco.css`.
-- Login y registro usan el diseño `.acceso` de `canaco.css` (foto a la izquierda y formulario a la derecha, campos `.campo` con ícono) y `static/js/acceso.js` (mostrar contraseña y requisitos en vivo). Si el registro falla, la vista vuelve a mostrar el formulario con lo que ya se escribió (`datos`) y marca el campo con error (`campo_error`); no hagas `redirect` en ese caso.
+- **Formularios** (login, registro, perfil, contraseña, contacto y panel): cada campo es un `<div class="campo">` con su `<label>` arriba; `campo-icono` agrega un ícono, `campo-clave` el botón del ojo, `campos-dobles` pone dos campos lado a lado y `campo-error` lo marca en rojo. Si un formulario falla, la vista vuelve a mostrarlo con `render` (no `redirect`) pasando `datos` (lo que se escribió) y `campo_error` (el nombre del campo).
+- `static/js/formularios.js` (cargado en `base.html`) se activa con atributos: `data-reglas` (requisitos de contraseña en vivo), `data-repite="id"` (aviso de que coinciden), `data-vista-previa="#selector"` (vista previa de imágenes), `data-contador="#selector"` (contador de caracteres) y `data-confirmar="mensaje"` en un `<form>` (pide confirmación antes de borrar).
+- **Panel:** cada página empieza con `.panel-cabecera` (título y botón principal), el contenido va en `.panel-tarjeta`, las listas usan `.tabla-panel` (en celular se vuelven tarjetas; pon `data-etiqueta` en cada `<td>`) o `.tarjeta-texto`, los estados `.estado estado-ok|espera|no|neutro` y las acciones de cada fila `.acciones` con botones `.accion` de solo ícono (con `title` y `aria-label`). Botones: `.boton-principal` y `.boton-secundario`. Los avisos se muestran con `{% include 'partials/mensajes.html' %}`.
 - Conserva el crédito "Diseñado por BootstrapMade" del footer: lo exige la licencia gratuita.
 - Imágenes de ejemplo en `static/img/`. La foto de perfil por defecto es `static/uploads/profile-default.jpg`.
 
@@ -98,7 +101,7 @@ El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-templat
 - Los nombres de rutas están en `home/urls.py` (`app_name = "home"`). La de noticias del panel es `crud_noticias`.
 - Las acciones del panel siguen el patrón `crud_<modulo>/<int:pk>/<accion>/` (por ejemplo `crud_noticias/5/editar/`); las que borran (`eliminar_*`) solo actúan con POST. El detalle público de una noticia es `home:noticia_detalle` y el de una categoría `home:categoria_detalle`.
 - Las noticias tienen `estado` (`borrador` o `publicado`); en plantillas compara con `noticia.estado == 'publicado'`. Los visitantes solo ven noticias publicadas y comentarios aprobados.
-- Todas las plantillas reciben `global_categorias` (todas las categorías), `global_recientes` (las 3 noticias publicadas más recientes) y `google_analytics_id` del context processor `home/context_processors.py`. Úsalas en lugar de pasarlas desde cada vista; el header y el footer ya las usan.
+- Todas las plantillas reciben `global_categorias` (todas las categorías), `global_recientes` (las 3 noticias publicadas más recientes), `mensajes_sin_leer` y `google_analytics_id` del context processor `home/context_processors.py`. Úsalas en lugar de pasarlas desde cada vista; el header y el footer ya las usan.
 - El menú lateral marca la opción activa comparando `request.resolver_match.url_name`; si agregas una página del panel, agrega su nombre a la condición del enlace correspondiente en `partials/sidebar.html`.
 
 ## Laboratorios nuevos
