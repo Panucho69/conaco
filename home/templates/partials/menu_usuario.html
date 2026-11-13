@@ -1,0 +1,12 @@
+{% load static %}
+<div class="menu-usuario" id="menu-usuario">
+    {% if request.user.perfil.foto_perfil %}
+    <img src="{{ request.user.perfil.foto_perfil.display_url }}" alt="">
+    {% else %}
+    <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
+    {% endif %}
+    <div>
+        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+        <span>{% if request.user.is_superuser %}Administrador{% elif request.user.is_staff %}Editor{% else %}Colaborador{% endif %}</span>
+    </div>
+</div>

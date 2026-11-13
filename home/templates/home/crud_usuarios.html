@@ -6,9 +6,9 @@
 <div class="panel-cabecera">
     <div>
         <h1>Usuarios</h1>
-        <p>{{ usuarios|length }} cuentas. Un usuario bloqueado no puede iniciar sesión.</p>
+        <p><span id="total-usuarios">{{ usuarios|length }}</span> cuentas. Un usuario bloqueado no puede iniciar sesión.</p>
     </div>
-    <a href="{% url 'home:crear_usuario' %}" class="boton-principal"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</a>
+    <a href="{% url 'home:crear_usuario' %}" class="boton-principal" data-modal><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</a>
 </div>
 
 {% include 'partials/mensajes.html' %}
@@ -24,58 +24,9 @@
                 <th><span class="visually-hidden">Acciones</span></th>
             </tr>
         </thead>
-        <tbody>
-            {% for user in usuarios %}
-            <tr>
-                <td class="celda-principal">
-                    <div class="noticia-fila">
-                        {% if user.perfil.foto_perfil %}
-                        <img src="{{ user.perfil.foto_perfil.display_url }}" alt="" style="width:40px;height:40px;border-radius:50%;">
-                        {% else %}
-                        <img src="{% static 'uploads/profile-default.jpg' %}" alt="" style="width:40px;height:40px;border-radius:50%;">
-                        {% endif %}
-                        <div>
-                            <strong>{{ user.username }}</strong>{% if user == request.user %} <span class="secundario d-inline">(tú)</span>{% endif %}
-                            <span class="secundario">{{ user.get_full_name|default:"Sin nombre" }}</span>
-                        </div>
-                    </div>
-                </td>
-                <td data-etiqueta="Correo">{{ user.email|default:"—" }}</td>
-                <td data-etiqueta="Rol">
-                    {% if user.is_superuser %}Administrador{% elif user.is_staff %}Editor{% else %}Colaborador{% endif %}
-                </td>
-                <td data-etiqueta="Estado">
-                    {% if user.is_active %}
-                    <span class="estado estado-ok">Activo</span>
-                    {% else %}
-                    <span class="estado estado-no">Bloqueado</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if user != request.user and not user.is_superuser or user != request.user and request.user.is_superuser %}
-                    <div class="acciones">
-                        <a href="{% url 'home:editar_usuario' user.id %}" class="accion" title="Editar" aria-label="Editar"><i class="bi bi-pencil"></i></a>
-                        <form method="post" action="{% url 'home:bloquear_usuario' user.id %}">
-                            {% csrf_token %}
-                            {% if user.is_active %}
-                            <button type="submit" class="accion" title="Bloquear" aria-label="Bloquear"><i class="bi bi-lock"></i></button>
-                            {% else %}
-                            <button type="submit" class="accion" title="Desbloquear" aria-label="Desbloquear"><i class="bi bi-unlock"></i></button>
-                            {% endif %}
-                        </form>
-                        <form method="post" action="{% url 'home:eliminar_usuario' user.id %}"
-                              data-confirmar="¿Eliminar la cuenta de {{ user.username }}? También se borran sus comentarios.">
-                            {% csrf_token %}
-                            <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
-                        </form>
-                    </div>
-                    {% elif user == request.user %}
-                    <div class="acciones">
-                        <a href="{% url 'home:crud_perfil' %}" class="accion" title="Editar mi perfil" aria-label="Editar mi perfil"><i class="bi bi-pencil"></i></a>
-                    </div>
-                    {% endif %}
-                </td>
-            </tr>
+        <tbody id="lista-usuarios">
+            {% for usuario in usuarios %}
+            {% include 'home/parciales/fila_usuario.html' %}
             {% endfor %}
         </tbody>
     </table>

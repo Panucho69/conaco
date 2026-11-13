@@ -1562,6 +1562,99 @@
 }
 
 /*--------------------------------------------------------------
+# AJAX: avisos flotantes, ventana modal y estados de carga
+--------------------------------------------------------------*/
+.avisos {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2000;
+  display: grid;
+  gap: 8px;
+  max-width: min(380px, calc(100vw - 32px));
+}
+
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: var(--nav-font);
+  font-size: 14px;
+  color: #fff;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45);
+  animation: aviso-entra 0.2s ease-out;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.aviso-ok { background: #1f4d33; }
+.aviso-error { background: #8c1a21; }
+
+.aviso.saliendo {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes aviso-entra {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* Fila o tarjeta que acaba de cambiar: se ilumina un momento */
+.recien-cambiado {
+  animation: recien-cambiado 1.6s ease-out;
+}
+
+@keyframes recien-cambiado {
+  from { background-color: color-mix(in srgb, var(--accent-color), transparent 82%); }
+}
+
+.tabla-panel tr.saliendo,
+.tarjeta-texto.saliendo {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+form.enviando {
+  cursor: progress;
+}
+
+form.enviando [type=submit] {
+  opacity: 0.6;
+}
+
+#modal-ajax .modal-content {
+  border: 0;
+  border-radius: 10px;
+}
+
+#modal-ajax .modal-header {
+  padding: 18px 24px;
+}
+
+#modal-ajax .modal-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+#modal-ajax .modal-body {
+  padding: 22px 24px 24px;
+}
+
+.noticia-fila img.foto-fila {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso,
+  .recien-cambiado {
+    animation: none;
+  }
+}
+
+/*--------------------------------------------------------------
 # Ajustes para celular
 --------------------------------------------------------------*/
 @media (max-width: 575.98px) {

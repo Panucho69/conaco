@@ -9,7 +9,9 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.core.files.storage import default_storage
 from django.db.models import Count, F
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 
 from .models import Archivo, Categoria, Comentario, GaleriaPublicacion, MensajeContacto, Perfil, Publicacion
@@ -46,6 +48,30 @@ def errores_imagenes(*uploads):
             if error:
                 return error
     return None
+
+
+# AJAX: las páginas del panel envían sus formularios con fetch() (static/js/ajax.js) y la
+# vista responde JSON en lugar de redirigir. Sin JavaScript todo funciona con recargas normales.
+
+def es_ajax(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+def respuesta_ajax(request, mensaje='', ok=True, campo=None, status=None, **cambios):
+    """JSON que entiende ajax.js.
+
+    Cambios que aplica en la página (cada uno es {selector CSS: html} o una lista de selectores):
+      reemplazar: cambia el elemento completo   contenido: cambia lo de adentro
+      agregar:    agrega al final del elemento  quitar:    lista de elementos a borrar
+      textos:     cambia solo el texto          cerrar_modal: True para cerrar la ventana
+    """
+    datos = {'ok': ok, 'mensaje': mensaje, 'campo': campo}
+    datos.update(cambios)
+    return JsonResponse(datos, status=status or (200 if ok else 400))
+
+
+def html(request, plantilla, contexto=None):
+    return render_to_string(plantilla, contexto or {}, request=request)
 
 
 def guardar_archivo(upload, user):
@@ -255,6 +281,8 @@ def crud_perfil(request):
             campo = 'foto' if error else None
 
         if error:
+            if es_ajax(request):
+                return respuesta_ajax(request, error, ok=False, campo=campo)
             messages.error(request, error)
             return render(request, 'home/crud_perfil.html', {
                 'perfil_usuario': perfil,
@@ -284,6 +312,13 @@ def crud_perfil(request):
 
         perfil.save()
 
+        if es_ajax(request):
+            request.user.refresh_from_db()
+            return respuesta_ajax(
+                request, 'Perfil actualizado.',
+                reemplazar={'#menu-usuario': html(request, 'partials/menu_usuario.html')},
+                textos={'#header-usuario': user.username},
+            )
         messages.success(request, 'Perfil actualizado correctamente.')
         return redirect('home:perfil')
 
@@ -318,6 +353,8 @@ def crud_cambiar_contrasena(request):
             campo = 'nueva' if error else None
 
         if error:
+            if es_ajax(request):
+                return respuesta_ajax(request, error, ok=False, campo=campo)
             messages.error(request, error)
             return render(request, 'home/crud_cambiar_contrasena.html', {'campo_error': campo})
 
@@ -325,6 +362,8 @@ def crud_cambiar_contrasena(request):
         user.save()
         update_session_auth_hash(request, user)
 
+        if es_ajax(request):
+            return respuesta_ajax(request, 'Contraseña actualizada. Tu sesión sigue abierta.')
         messages.success(request, 'Contraseña actualizada correctamente.')
         return redirect('home:crud_cambiar_contrasena')
 
@@ -445,10 +484,19 @@ def eliminar_publicacion(request, pk):
     return redirect('home:crud_noticias')
 
 
+def filtros_comentarios():
+    conteo = {fila['estado']: fila['total'] for fila in Comentario.objects.values('estado').annotate(total=Count('id'))}
+    return [
+        ('', 'Todos', sum(conteo.values())),
+        (Comentario.ESTADO_PENDIENTE, 'Pendientes', conteo.get(Comentario.ESTADO_PENDIENTE, 0)),
+        (Comentario.ESTADO_APROBADO, 'Aprobados', conteo.get(Comentario.ESTADO_APROBADO, 0)),
+        (Comentario.ESTADO_BLOQUEADO, 'Bloqueados', conteo.get(Comentario.ESTADO_BLOQUEADO, 0)),
+    ]
+
+
 @operador_required
 def crud_comentarios(request):
     comentarios = Comentario.objects.select_related('publicacion', 'user').order_by('-createdat')
-    conteo = {fila['estado']: fila['total'] for fila in comentarios.order_by().values('estado').annotate(total=Count('id'))}
     filtro = request.GET.get('estado', '')
     if filtro in dict(Comentario.ESTADOS):
         comentarios = comentarios.filter(estado=filtro)
@@ -457,45 +505,62 @@ def crud_comentarios(request):
     return render(request, 'home/crud_comentarios.html', {
         'comentarios': comentarios,
         'filtro': filtro,
-        'filtros': [
-            ('', 'Todos', sum(conteo.values())),
-            (Comentario.ESTADO_PENDIENTE, 'Pendientes', conteo.get(Comentario.ESTADO_PENDIENTE, 0)),
-            (Comentario.ESTADO_APROBADO, 'Aprobados', conteo.get(Comentario.ESTADO_APROBADO, 0)),
-            (Comentario.ESTADO_BLOQUEADO, 'Bloqueados', conteo.get(Comentario.ESTADO_BLOQUEADO, 0)),
-        ],
+        'filtros': filtros_comentarios(),
     })
 
 
-def volver_a_comentarios(request):
-    estado = request.POST.get('filtro', '')
-    url = reverse('home:crud_comentarios')
-    return redirect(f'{url}?estado={estado}' if estado in dict(Comentario.ESTADOS) else url)
+def cambiar_comentario(request, pk, estado=None):
+    """Aprueba, bloquea (estado) o elimina (estado=None) un comentario. Solo por POST."""
+    comentario = get_object_or_404(Comentario.objects.select_related('publicacion', 'user'), pk=pk)
+    filtro = request.POST.get('filtro', '')
+    if filtro not in dict(Comentario.ESTADOS):
+        filtro = ''
+
+    if request.method != 'POST':
+        if es_ajax(request):
+            return respuesta_ajax(request, 'Acción no permitida.', ok=False, status=405)
+        return redirect('home:crud_comentarios')
+
+    selector = f'#comentario-{comentario.pk}'
+    if estado:
+        comentario.estado = estado
+        comentario.save()
+        mensaje = 'Comentario aprobado.' if estado == Comentario.ESTADO_APROBADO else 'Comentario bloqueado.'
+    else:
+        comentario.delete()
+        mensaje = 'Comentario eliminado.'
+
+    if not es_ajax(request):
+        url = reverse('home:crud_comentarios')
+        return redirect(f'{url}?estado={filtro}' if filtro else url)
+
+    contexto = {'filtro': filtro, 'filtros': filtros_comentarios()}
+    cambios = {'reemplazar': {'#filtros-comentarios': html(request, 'home/parciales/filtros_comentarios.html', contexto)}}
+    # Si el comentario ya no corresponde al filtro que se está viendo, se quita de la lista
+    if not estado or (filtro and filtro != estado):
+        cambios['quitar'] = [selector]
+        quedan = Comentario.objects.filter(estado=filtro).exists() if filtro else Comentario.objects.exists()
+        if not quedan:
+            cambios['contenido'] = {'#lista-comentarios': html(request, 'home/parciales/comentarios_vacio.html', contexto)}
+    else:
+        contexto['comentario'] = comentario
+        cambios['reemplazar'][selector] = html(request, 'home/parciales/tarjeta_comentario.html', contexto)
+    return respuesta_ajax(request, mensaje, **cambios)
 
 
 @operador_required
 def aprobar_comentario(request, pk):
-    comentario = get_object_or_404(Comentario, pk=pk)
-    if request.method == 'POST':
-        comentario.estado = Comentario.ESTADO_APROBADO
-        comentario.save()
-    return volver_a_comentarios(request)
+    return cambiar_comentario(request, pk, Comentario.ESTADO_APROBADO)
 
 
 @operador_required
 def bloquear_comentario(request, pk):
-    comentario = get_object_or_404(Comentario, pk=pk)
-    if request.method == 'POST':
-        comentario.estado = Comentario.ESTADO_BLOQUEADO
-        comentario.save()
-    return volver_a_comentarios(request)
+    return cambiar_comentario(request, pk, Comentario.ESTADO_BLOQUEADO)
 
 
 @operador_required
 def eliminar_comentario(request, pk):
-    comentario = get_object_or_404(Comentario, pk=pk)
-    if request.method == 'POST':
-        comentario.delete()
-    return volver_a_comentarios(request)
+    return cambiar_comentario(request, pk)
 
 
 @operador_required
@@ -522,43 +587,96 @@ def eliminar_mensaje(request, pk):
     return redirect('home:crud_mensajes')
 
 
+def categorias_con_total():
+    return Categoria.objects.select_related('fk_user').annotate(total_noticias=Count('publicacion'))
+
+
+def error_nombre_categoria(nombre, excluir=None):
+    if not nombre:
+        return 'Escribe el nombre de la categoría.'
+    repetidas = Categoria.objects.filter(nombre__iexact=nombre)
+    if excluir:
+        repetidas = repetidas.exclude(pk=excluir.pk)
+    if repetidas.exists():
+        return f'Ya existe la categoría "{nombre}".'
+    return None
+
+
 @operador_required
 def crud_categorias(request):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        if not nombre:
-            messages.error(request, 'Escribe el nombre de la categoría.')
-        elif Categoria.objects.filter(nombre__iexact=nombre).exists():
-            messages.error(request, f'Ya existe la categoría "{nombre}".')
-        else:
-            Categoria.objects.create(nombre=nombre[:60], fk_user=request.user)
-            messages.success(request, f'Categoría "{nombre}" agregada.')
+        nombre = request.POST.get('nombre', '').strip()[:60]
+        error = error_nombre_categoria(nombre)
+        if error:
+            if es_ajax(request):
+                return respuesta_ajax(request, error, ok=False, campo='nombre')
+            messages.error(request, error)
+            return redirect('home:crud_categorias')
+
+        categoria = Categoria.objects.create(nombre=nombre, fk_user=request.user)
+        mensaje = f'Categoría "{nombre}" agregada.'
+        if es_ajax(request):
+            categoria = categorias_con_total().get(pk=categoria.pk)
+            return respuesta_ajax(
+                request, mensaje,
+                agregar={'#lista-categorias': html(request, 'home/parciales/fila_categoria.html', {'categoria': categoria})},
+                quitar=['#categorias-vacia'],
+            )
+        messages.success(request, mensaje)
         return redirect('home:crud_categorias')
-    categorias = Categoria.objects.select_related('fk_user').annotate(
-        total_noticias=Count('publicacion'),
-    ).order_by('nombre')
-    return render(request, 'home/crud_categorias.html', {'categorias': categorias})
+
+    return render(request, 'home/crud_categorias.html', {'categorias': categorias_con_total().order_by('nombre')})
 
 
 @operador_required
 def editar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
+    contexto = {'categoria': categoria, 'ajax': es_ajax(request)}
+
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        if nombre:
-            categoria.nombre = nombre
-            categoria.save()
-            messages.success(request, 'Categoría actualizada correctamente.')
+        nombre = request.POST.get('nombre', '').strip()[:60]
+        error = error_nombre_categoria(nombre, excluir=categoria)
+        if error:
+            if es_ajax(request):
+                return respuesta_ajax(request, error, ok=False, campo='nombre')
+            messages.error(request, error)
+            contexto.update(nombre=nombre, campo_error='nombre')
+            return render(request, 'home/editar_categoria.html', contexto)
+
+        categoria.nombre = nombre
+        categoria.save()
+        mensaje = f'Categoría renombrada a "{nombre}".'
+        if es_ajax(request):
+            categoria = categorias_con_total().get(pk=categoria.pk)
+            return respuesta_ajax(
+                request, mensaje, cerrar_modal=True,
+                reemplazar={f'#categoria-{categoria.pk}': html(request, 'home/parciales/fila_categoria.html', {'categoria': categoria})},
+            )
+        messages.success(request, mensaje)
         return redirect('home:crud_categorias')
-    return render(request, 'home/editar_categoria.html', {'categoria': categoria})
+
+    if es_ajax(request):
+        return JsonResponse({'titulo': 'Cambiar nombre', 'html': html(request, 'home/parciales/form_categoria.html', contexto)})
+    return render(request, 'home/editar_categoria.html', contexto)
 
 
 @operador_required
 def eliminar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
-    if request.method == 'POST':
-        categoria.delete()
-        messages.success(request, 'Categoría eliminada correctamente.')
+    if request.method != 'POST':
+        if es_ajax(request):
+            return respuesta_ajax(request, 'Acción no permitida.', ok=False, status=405)
+        return redirect('home:crud_categorias')
+
+    nombre = categoria.nombre
+    categoria.delete()
+    mensaje = f'Categoría "{nombre}" eliminada.'
+    if es_ajax(request):
+        cambios = {'quitar': [f'#categoria-{pk}']}
+        if not Categoria.objects.exists():
+            cambios['contenido'] = {'#lista-categorias': html(request, 'home/parciales/categorias_vacia.html')}
+        return respuesta_ajax(request, mensaje, **cambios)
+    messages.success(request, mensaje)
     return redirect('home:crud_categorias')
 
 
@@ -573,7 +691,7 @@ def crud_usuarios(request):
 def formulario_usuario(request, usuario=None):
     """Crea (usuario=None) o edita una cuenta desde el panel. Si algo falla, vuelve a mostrar lo escrito."""
     perfil = Perfil.objects.get_or_create(user=usuario)[0] if usuario else None
-    contexto = {'usuario_editado': usuario, 'perfil_editado': perfil}
+    contexto = {'usuario_editado': usuario, 'perfil_editado': perfil, 'ajax': es_ajax(request)}
 
     if request.method != 'POST':
         if usuario:
@@ -584,6 +702,9 @@ def formulario_usuario(request, usuario=None):
             }
         else:
             contexto['datos'] = {'rol': 'colaborador'}
+        if es_ajax(request):
+            titulo = f'Editar a {usuario.username}' if usuario else 'Nuevo usuario'
+            return JsonResponse({'titulo': titulo, 'html': html(request, 'home/parciales/form_usuario.html', contexto)})
         return render(request, 'home/crear_usuario.html', contexto)
 
     datos = {campo: request.POST.get(campo, '').strip() for campo in (
@@ -613,6 +734,8 @@ def formulario_usuario(request, usuario=None):
         campo = 'password1' if error else None
 
     if error:
+        if es_ajax(request):
+            return respuesta_ajax(request, error, ok=False, campo=campo)
         messages.error(request, error)
         contexto.update(datos=datos, campo_error=campo)
         return render(request, 'home/crear_usuario.html', contexto)
@@ -633,7 +756,15 @@ def formulario_usuario(request, usuario=None):
     perfil.apellido_paterno = datos['apellido_paterno']
     perfil.apellido_materno = datos['apellido_materno']
     perfil.save()
-    messages.success(request, f'Usuario "{usuario.username}" {"creado" if nuevo else "actualizado"}.')
+    mensaje = f'Usuario "{usuario.username}" {"creado" if nuevo else "actualizado"}.'
+    if es_ajax(request):
+        fila = html(request, 'home/parciales/fila_usuario.html', {'usuario': usuario})
+        if nuevo:
+            return respuesta_ajax(request, mensaje, cerrar_modal=True,
+                                  agregar={'#lista-usuarios': fila},
+                                  textos={'#total-usuarios': str(User.objects.count())})
+        return respuesta_ajax(request, mensaje, cerrar_modal=True, reemplazar={f'#usuario-{usuario.pk}': fila})
+    messages.success(request, mensaje)
     return redirect('home:crud_usuarios')
 
 
@@ -646,23 +777,53 @@ def crear_usuario(request):
 def editar_usuario(request, pk):
     usuario = get_object_or_404(User, pk=pk)
     if not puede_gestionar(request.user, usuario):
-        messages.error(request, 'Solo un administrador puede editar a otro administrador.')
+        mensaje = 'Solo un administrador puede editar a otro administrador.'
+        if es_ajax(request):
+            return respuesta_ajax(request, mensaje, ok=False, status=403)
+        messages.error(request, mensaje)
         return redirect('home:crud_usuarios')
     return formulario_usuario(request, usuario)
 
 
-@operador_required
-def bloquear_usuario(request, pk):
+def accion_usuario(request, pk, eliminar=False):
+    """Bloquea/desbloquea o elimina una cuenta. Nadie se modifica a sí mismo y un editor no toca administradores."""
     usuario = get_object_or_404(User, pk=pk)
-    if request.method == 'POST' and usuario != request.user and puede_gestionar(request.user, usuario):
+    error = None
+    if request.method != 'POST':
+        error = 'Acción no permitida.'
+    elif usuario == request.user:
+        error = 'No puedes bloquear ni eliminar tu propia cuenta.'
+    elif not puede_gestionar(request.user, usuario):
+        error = 'Solo un administrador puede modificar a otro administrador.'
+
+    if error:
+        if es_ajax(request):
+            return respuesta_ajax(request, error, ok=False, status=403)
+        if request.method == 'POST':
+            messages.error(request, error)
+        return redirect('home:crud_usuarios')
+
+    if eliminar:
+        usuario.delete()
+        mensaje = f'Cuenta de {usuario.username} eliminada.'
+        cambios = {'quitar': [f'#usuario-{pk}'], 'textos': {'#total-usuarios': str(User.objects.count())}}
+    else:
         usuario.is_active = not usuario.is_active
         usuario.save()
+        mensaje = f'{usuario.username} {"desbloqueado" if usuario.is_active else "bloqueado"}.'
+        cambios = {'reemplazar': {f'#usuario-{pk}': html(request, 'home/parciales/fila_usuario.html', {'usuario': usuario})}}
+
+    if es_ajax(request):
+        return respuesta_ajax(request, mensaje, **cambios)
+    messages.success(request, mensaje)
     return redirect('home:crud_usuarios')
+
+
+@operador_required
+def bloquear_usuario(request, pk):
+    return accion_usuario(request, pk)
 
 
 @operador_required
 def eliminar_usuario(request, pk):
-    usuario = get_object_or_404(User, pk=pk)
-    if request.method == 'POST' and usuario != request.user and puede_gestionar(request.user, usuario):
-        usuario.delete()
-    return redirect('home:crud_usuarios')
+    return accion_usuario(request, pk, eliminar=True)

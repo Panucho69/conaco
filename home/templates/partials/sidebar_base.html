@@ -16,4 +16,17 @@ alrededor del contenido. Las páginas del panel la extienden y usan el bloque co
         </div>
     </div>
 </section>
+
+<!-- Ventana para crear o editar sin salir de la lista (la llena static/js/ajax.js) -->
+<div class="modal fade" id="modal-ajax" tabindex="-1" aria-labelledby="modal-ajax-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-ajax-titulo"></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
 {% endblock main %}

@@ -1,0 +1,43 @@
+{% load static %}
+<article id="comentario-{{ comentario.id }}" class="tarjeta-texto{% if comentario.estado == 'pendiente' %} resaltada{% endif %}">
+    <header>
+        {% if comentario.user.perfil.foto_perfil %}
+        <img src="{{ comentario.user.perfil.foto_perfil.display_url }}" alt="">
+        {% else %}
+        <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
+        {% endif %}
+        <div>
+            <strong>{{ comentario.user.username }}</strong>
+            <span class="secundario">{{ comentario.createdat|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="acciones">
+            {% if comentario.estado != 'aprobado' %}
+            <form method="post" action="{% url 'home:aprobar_comentario' comentario.id %}" data-ajax>
+                {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                <button type="submit" class="accion" title="Aprobar" aria-label="Aprobar"><i class="bi bi-check-lg"></i></button>
+            </form>
+            {% endif %}
+            {% if comentario.estado != 'bloqueado' %}
+            <form method="post" action="{% url 'home:bloquear_comentario' comentario.id %}" data-ajax>
+                {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                <button type="submit" class="accion" title="Bloquear" aria-label="Bloquear"><i class="bi bi-slash-circle"></i></button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'home:eliminar_comentario' comentario.id %}" data-ajax data-confirmar="¿Eliminar este comentario de {{ comentario.user.username }}?">
+                {% csrf_token %}<input type="hidden" name="filtro" value="{{ filtro }}">
+                <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    </header>
+    <blockquote>{{ comentario.contenido }}</blockquote>
+    <footer>
+        {% if comentario.estado == 'aprobado' %}
+        <span class="estado estado-ok">Aprobado</span>
+        {% elif comentario.estado == 'bloqueado' %}
+        <span class="estado estado-no">Bloqueado</span>
+        {% else %}
+        <span class="estado estado-espera">Pendiente</span>
+        {% endif %}
+        en <a href="{% url 'home:noticia_detalle' comentario.publicacion.id %}">{{ comentario.publicacion.titulo }}</a>
+    </footer>
+</article>

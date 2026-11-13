@@ -1,0 +1,15 @@
+<form method="POST" action="{% url 'home:editar_categoria' categoria.id %}" class="acceso-form{% if not ajax %} panel-tarjeta{% endif %}"{% if ajax %} data-ajax{% else %} style="max-width: 560px;"{% endif %}>
+    {% csrf_token %}
+    <div class="campo{% if campo_error == 'nombre' %} campo-error{% endif %}">
+        <label for="nombre-categoria">Nombre de la categoría</label>
+        <input type="text" id="nombre-categoria" name="nombre" value="{{ nombre|default:categoria.nombre }}" maxlength="60" required autofocus>
+    </div>
+    <div class="formulario-acciones">
+        {% if ajax %}
+        <button type="button" class="boton-secundario" data-bs-dismiss="modal">Cancelar</button>
+        {% else %}
+        <a href="{% url 'home:crud_categorias' %}" class="boton-secundario">Cancelar</a>
+        {% endif %}
+        <button type="submit" class="boton-principal">Guardar</button>
+    </div>
+</form>

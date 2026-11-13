@@ -12,7 +12,7 @@
 
 {% include 'partials/mensajes.html' %}
 
-<form method="POST" class="panel-tarjeta acceso-form" style="max-width: 560px;">
+<form method="POST" class="panel-tarjeta acceso-form" style="max-width: 560px;" data-ajax data-limpiar>
     {% csrf_token %}
     <input type="text" name="username" value="{{ request.user.username }}" autocomplete="username" hidden>
 

@@ -12,7 +12,7 @@
 
 {% include 'partials/mensajes.html' %}
 
-<form method="POST" enctype="multipart/form-data" class="panel-tarjeta acceso-form">
+<form method="POST" enctype="multipart/form-data" class="panel-tarjeta acceso-form" data-ajax>
     {% csrf_token %}
 
     <div class="foto-editable{% if campo_error == 'foto' %} campo-error{% endif %}">

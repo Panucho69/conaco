@@ -1,0 +1,5 @@
+<nav class="filtros" id="filtros-comentarios" aria-label="Filtrar por estado">
+    {% for valor, nombre, total in filtros %}
+    <a href="?estado={{ valor }}" class="{% if filtro == valor %}activo{% endif %}" {% if filtro == valor %}aria-current="page"{% endif %}>{{ nombre }}<span>{{ total }}</span></a>
+    {% endfor %}
+</nav>

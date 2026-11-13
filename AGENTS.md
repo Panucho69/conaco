@@ -82,6 +82,15 @@ La app se va a publicar en Azure App Service (dominio `*.azurewebsites.net`). El
 - **Dependencias:** Django está fijado en la última versión de la rama 4.2 (`4.2.30`). Si Dependabot avisa de vulnerabilidades, sube a la última `4.2.x`; las alertas que solo tienen corrección en 5.x son de GeoDjango, GDAL o la caché de páginas, que el proyecto no usa.
 - **Producción:** con `WEBSITE_HOSTNAME` se activan HTTPS obligatorio, cookies seguras y HSTS (30 días). `python manage.py check --deploy` no debe mostrar avisos con esas variables.
 
+## AJAX (CRUD sin recargar la página)
+
+Categorías, comentarios, usuarios, perfil y cambio de contraseña se guardan con `fetch()` sin recargar. Sin JavaScript los mismos formularios siguen funcionando con recarga normal.
+
+- **Plantilla:** pon `data-ajax` al `<form>` (y `data-limpiar` si debe vaciarse al guardar). Un `<a data-modal href="...">` abre esa página dentro de la ventana `#modal-ajax` de `sidebar_base.html`. Lo maneja `static/js/ajax.js`; si agregas HTML con otros medios, llama `Canaco.iniciar(elemento)` para activar las ayudas de `formularios.js`.
+- **Vista:** pregunta `es_ajax(request)`. Si es AJAX responde con `respuesta_ajax(request, mensaje, ok=..., campo=..., ...)` en lugar de `messages` + `redirect`; si no, conserva el comportamiento normal. Para un error: `ok=False` y `campo` con el `name` del campo. Para mostrar cambios, el servidor manda el HTML ya renderizado con `html(request, plantilla, contexto)`: `reemplazar={selector: html}`, `contenido={selector: html}`, `agregar={selector: html}`, `quitar=[selectores]`, `textos={selector: texto}` y `cerrar_modal=True`.
+- Un GET por AJAX a una página de formulario (`crear_usuario`, `editar_usuario`, `editar_categoria`) devuelve `{"titulo", "html"}` para la ventana modal.
+- **Parciales:** las filas y tarjetas que cambian están en `home/templates/home/parciales/` (`fila_categoria`, `fila_usuario`, `tarjeta_comentario`, `filtros_comentarios`, `form_usuario`, `form_categoria`...) y llevan un `id` como `categoria-5` o `usuario-3`. La página y la respuesta AJAX usan **la misma** parcial; si cambias el diseño de una fila, cámbialo ahí. En parciales usa `usuario`, no `user` (Django ya usa `user` para la sesión).
+
 ## Plantilla visual (ZenBlog)
 
 El diseño es [ZenBlog](https://bootstrapmade.com/zenblog-bootstrap-blog-template/) (Bootstrap 5.3).

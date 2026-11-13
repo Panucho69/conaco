@@ -1,0 +1,16 @@
+<tr id="categoria-{{ categoria.id }}">
+    <td class="celda-principal"><a href="{% url 'home:categoria_detalle' categoria.id %}" class="fw-semibold">{{ categoria.nombre }}</a></td>
+    <td data-etiqueta="Noticias" class="numero">{{ categoria.total_noticias }}</td>
+    <td data-etiqueta="Creada por">{{ categoria.fk_user.username|default:"—" }}</td>
+    <td data-etiqueta="Fecha">{{ categoria.createdat|date:"d/m/Y" }}</td>
+    <td>
+        <div class="acciones">
+            <a href="{% url 'home:editar_categoria' categoria.id %}" class="accion" data-modal title="Cambiar nombre" aria-label="Cambiar nombre"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{% url 'home:eliminar_categoria' categoria.id %}" data-ajax
+                  data-confirmar="¿Eliminar la categoría «{{ categoria.nombre }}»?{% if categoria.total_noticias %} Sus {{ categoria.total_noticias }} noticias quedarán sin categoría.{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="accion accion-peligro" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    </td>
+</tr>
