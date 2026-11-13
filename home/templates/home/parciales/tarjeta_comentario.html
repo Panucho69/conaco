@@ -38,6 +38,7 @@
         {% else %}
         <span class="estado estado-espera">Pendiente</span>
         {% endif %}
+        {% if comentario.motivo_revision %}<span class="motivo-revision" title="Detectado por la moderación automática"><i class="bi bi-shield-exclamation" aria-hidden="true"></i> {{ comentario.motivo_revision }}</span>{% endif %}
         en <a href="{% url 'home:noticia_detalle' comentario.publicacion.id %}">{{ comentario.publicacion.titulo }}</a>
     </footer>
 </article>

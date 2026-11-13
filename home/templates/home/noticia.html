@@ -127,7 +127,10 @@
                         <h4>Agregar comentario</h4>
                         <div class="row">
                             <div class="col form-group">
-                                <textarea name="contenido" id="contenido" rows="4" class="form-control" placeholder="Escribe tu comentario*" required></textarea>
+                                <textarea name="contenido" id="contenido" rows="4" maxlength="3000" class="form-control" placeholder="Escribe tu comentario*" required aria-describedby="reglas-comentario"></textarea>
+                                <small id="reglas-comentario" class="text-muted d-block mt-2">
+                                    Tu comentario se publica al instante. Si tiene groserías, insultos o enlaces, primero lo revisa el equipo.
+                                </small>
                             </div>
                         </div>
                         <div class="text-center">

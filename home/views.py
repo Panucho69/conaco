@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from .models import Archivo, Categoria, Comentario, GaleriaPublicacion, MensajeContacto, Perfil, Publicacion
+from .moderacion import motivo_revision
 from .seguridad import obtener_ip_cliente, validar_imagen
 
 logger = logging.getLogger(__name__)
@@ -181,10 +182,21 @@ def noticia(request, pk=None):
         if not request.user.is_authenticated:
             messages.error(request, 'Debes iniciar sesión para comentar.')
             return redirect('home:login')
-        contenido = request.POST.get('contenido', '').strip()
+        contenido = request.POST.get('contenido', '').strip()[:3000]
         if contenido:
-            Comentario.objects.create(publicacion=publicacion, user=request.user, contenido=contenido)
-            messages.success(request, 'Comentario enviado. Será visible cuando lo apruebe el administrador.')
+            # Se publica solo; si tiene lenguaje ofensivo o enlaces queda pendiente de revisión
+            motivo = motivo_revision(contenido)
+            Comentario.objects.create(
+                publicacion=publicacion, user=request.user, contenido=contenido,
+                estado=Comentario.ESTADO_PENDIENTE if motivo else Comentario.ESTADO_APROBADO,
+                motivo_revision=motivo,
+            )
+            if motivo:
+                logger.info('Comentario retenido para revisión (%s) de %s en la noticia %s', motivo, request.user.username, publicacion.pk)
+                messages.warning(request, 'Tu comentario quedó en revisión: el equipo lo revisará antes de publicarlo. '
+                                          'Recuerda que no se permiten groserías, insultos ni enlaces.')
+            else:
+                messages.success(request, 'Comentario publicado.')
         return redirect('home:noticia_detalle', pk=publicacion.pk)
 
     recientes = Publicacion.objects.filter(
@@ -535,7 +547,13 @@ def cambiar_comentario(request, pk, estado=None):
         return redirect(f'{url}?estado={filtro}' if filtro else url)
 
     contexto = {'filtro': filtro, 'filtros': filtros_comentarios()}
-    cambios = {'reemplazar': {'#filtros-comentarios': html(request, 'home/parciales/filtros_comentarios.html', contexto)}}
+    pendientes = Comentario.objects.filter(estado=Comentario.ESTADO_PENDIENTE).count()
+    aviso = (f'<span class="menu-aviso" id="aviso-comentarios" title="Comentarios por revisar"'
+             f'{"" if pendientes else " hidden"}>{pendientes}</span>')
+    cambios = {'reemplazar': {
+        '#filtros-comentarios': html(request, 'home/parciales/filtros_comentarios.html', contexto),
+        '#aviso-comentarios': aviso,
+    }}
     # Si el comentario ya no corresponde al filtro que se está viendo, se quita de la lista
     if not estado or (filtro and filtro != estado):
         cambios['quitar'] = [selector]

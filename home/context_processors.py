@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from home.models import Categoria, MensajeContacto, Publicacion
+from home.models import Categoria, Comentario, MensajeContacto, Publicacion
 
 
 def global_categorias(request):
@@ -11,6 +11,10 @@ def global_categorias(request):
         # Solo se consulta si el visitante es del equipo (para el aviso del menú lateral)
         'mensajes_sin_leer': (
             MensajeContacto.objects.filter(leido=False).count
+            if request.user.is_authenticated and request.user.is_staff else 0
+        ),
+        'comentarios_pendientes': (
+            Comentario.objects.filter(estado=Comentario.ESTADO_PENDIENTE).count
             if request.user.is_authenticated and request.user.is_staff else 0
         ),
     }

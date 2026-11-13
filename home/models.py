@@ -113,6 +113,8 @@ class Comentario(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     contenido = models.TextField()
     estado = models.CharField(max_length=20, choices=ESTADOS, default=ESTADO_PENDIENTE)
+    # Por qué la moderación automática lo dejó pendiente (vacío si se publicó directo)
+    motivo_revision = models.CharField(max_length=120, blank=True)
     createdat = models.DateTimeField(auto_now_add=True)
     updatedat = models.DateTimeField(auto_now=True)
 
