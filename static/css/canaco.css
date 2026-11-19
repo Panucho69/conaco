@@ -1507,6 +1507,13 @@
     display: none;
   }
 
+  /* El menú se desliza de lado: el borde derecho se desvanece para indicar que hay más opciones */
+  .menu-panel .nav {
+    -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+    mask-image: linear-gradient(to right, #000 82%, transparent);
+    padding-right: 40px;
+  }
+
   .panel-tarjeta {
     padding: 20px 18px;
   }
@@ -1658,6 +1665,25 @@ form.enviando [type=submit] {
   .aviso,
   .recien-cambiado {
     animation: none;
+  }
+}
+
+/*--------------------------------------------------------------
+# Safari en iPhone: hace zoom al tocar un campo con letra menor de 16px.
+# En pantallas de celular todos los campos usan 16px para evitarlo.
+--------------------------------------------------------------*/
+@media (max-width: 991.98px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),
+  textarea,
+  select,
+  .campo input,
+  .campo textarea,
+  .campo select,
+  .comment-form form input,
+  .comment-form form textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px;
   }
 }
 
