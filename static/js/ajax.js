@@ -1,7 +1,7 @@
 // AJAX del panel: envía los formularios con fetch() y actualiza solo la parte de la página que cambió.
 //
 //  <form data-ajax>      se envía sin recargar. La vista responde JSON (ver respuesta_ajax en views.py)
-//                        con un mensaje y los cambios a aplicar: reemplazar, contenido, agregar, quitar, textos.
+//                        con un mensaje y los cambios a aplicar: reemplazar, contenido, agregar, anteponer, quitar, textos.
 //  <form data-limpiar>   además se vacía al guardar bien (agregar categoría, cambiar contraseña).
 //  <a data-modal>        abre su página dentro de la ventana #modal-ajax en lugar de cambiar de página.
 //
@@ -10,7 +10,7 @@
   var CABECERAS = { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' };
 
   // ---------- Avisos flotantes ----------
-  function avisar(texto, ok) {
+  function avisar(texto, ok, tipo) {
     if (!texto) return;
     var zona = document.getElementById('avisos');
     if (!zona) {
@@ -21,15 +21,16 @@
       document.body.appendChild(zona);
     }
     var aviso = document.createElement('div');
-    aviso.className = 'aviso ' + (ok ? 'aviso-ok' : 'aviso-error');
+    var advertencia = ok && tipo === 'aviso';
+    aviso.className = 'aviso ' + (advertencia ? 'aviso-advertencia' : ok ? 'aviso-ok' : 'aviso-error');
     aviso.setAttribute('role', ok ? 'status' : 'alert');
-    aviso.innerHTML = '<i class="bi ' + (ok ? 'bi-check-circle' : 'bi-exclamation-circle') + '" aria-hidden="true"></i>';
+    aviso.innerHTML = '<i class="bi ' + (advertencia ? 'bi-shield-exclamation' : ok ? 'bi-check-circle' : 'bi-exclamation-circle') + '" aria-hidden="true"></i>';
     aviso.appendChild(document.createTextNode(' ' + texto));
     zona.appendChild(aviso);
     setTimeout(function () {
       aviso.classList.add('saliendo');
       setTimeout(function () { aviso.remove(); }, 300);
-    }, ok ? 3500 : 6000);
+    }, ok && tipo !== 'aviso' ? 3500 : 7000);
   }
 
   // ---------- Aplicar los cambios que manda el servidor ----------
@@ -68,13 +69,15 @@
         Canaco.iniciar(caja);
       }, 260);
     });
-    Object.entries(datos.agregar || {}).forEach(function (par) {
-      var caja = document.querySelector(par[0]);
-      if (!caja) return;
-      var nuevo = aHtml(par[1]).firstElementChild;
-      caja.appendChild(nuevo);
-      Canaco.iniciar(nuevo);
-      resaltar(nuevo);
+    ['agregar', 'anteponer'].forEach(function (operacion) {
+      Object.entries(datos[operacion] || {}).forEach(function (par) {
+        var caja = document.querySelector(par[0]);
+        if (!caja) return;
+        var nuevo = aHtml(par[1]).firstElementChild;
+        if (operacion === 'agregar') caja.appendChild(nuevo); else caja.prepend(nuevo);
+        Canaco.iniciar(nuevo);
+        resaltar(nuevo);
+      });
     });
     Object.entries(datos.textos || {}).forEach(function (par) {
       document.querySelectorAll(par[0]).forEach(function (el) { el.textContent = par[1]; });
@@ -84,6 +87,7 @@
   // ---------- Errores en el formulario ----------
   function limpiarErrores(form) {
     form.querySelectorAll('.campo-error').forEach(function (el) { el.classList.remove('campo-error'); });
+    form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
     var alerta = form.querySelector('.alerta-form');
     if (alerta) alerta.remove();
   }
@@ -92,7 +96,8 @@
     var campo = datos.campo && form.querySelector('[name="' + datos.campo + '"]');
     var dentroDeModal = form.closest('.modal');
     if (campo) {
-      (campo.closest('.campo, fieldset, .foto-editable') || campo).classList.add('campo-error');
+      var caja = campo.closest('.campo, fieldset, .foto-editable');
+      if (caja) caja.classList.add('campo-error'); else campo.classList.add('is-invalid');
       campo.focus();
     }
     // En la ventana modal el error se ve dentro del formulario; en la página, como aviso flotante
@@ -141,7 +146,7 @@
       form.querySelectorAll('input[type=file]').forEach(function (i) { i.value = ''; });
       if (datos.cerrar_modal) cerrarModal();
       aplicar(datos);
-      avisar(datos.mensaje, true);
+      avisar(datos.mensaje, true, datos.tipo);
     } catch (error) {
       avisar('No se pudo conectar con el servidor. Revisa tu internet e inténtalo de nuevo.', false);
     } finally {

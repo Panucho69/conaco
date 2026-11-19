@@ -1573,7 +1573,7 @@
 .avisos {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: 76px;  /* arriba del botón para subir de la plantilla */
   z-index: 2000;
   display: grid;
   gap: 8px;
@@ -1596,6 +1596,7 @@
 
 .aviso-ok { background: #1f4d33; }
 .aviso-error { background: #8c1a21; }
+.aviso-advertencia { background: #7a4f00; }
 
 .aviso.saliendo {
   opacity: 0;

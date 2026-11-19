@@ -63,7 +63,8 @@ def respuesta_ajax(request, mensaje='', ok=True, campo=None, status=None, **camb
 
     Cambios que aplica en la página (cada uno es {selector CSS: html} o una lista de selectores):
       reemplazar: cambia el elemento completo   contenido: cambia lo de adentro
-      agregar:    agrega al final del elemento  quitar:    lista de elementos a borrar
+      agregar:    agrega al final del elemento  anteponer: agrega al principio
+      quitar:     lista de elementos a borrar   tipo='aviso': aviso amarillo (guardado, pero con advertencia)
       textos:     cambia solo el texto          cerrar_modal: True para cerrar la ventana
     """
     datos = {'ok': ok, 'mensaje': mensaje, 'campo': campo}
@@ -175,29 +176,11 @@ def noticia(request, pk=None):
         messages.info(request, 'Todavía no hay noticias publicadas.')
         return redirect('home:index')
 
+    if request.method == 'POST':
+        return comentar(request, publicacion)
+
     Publicacion.objects.filter(pk=publicacion.pk).update(visitas=F('visitas') + 1)
     publicacion.refresh_from_db()
-
-    if request.method == 'POST':
-        if not request.user.is_authenticated:
-            messages.error(request, 'Debes iniciar sesión para comentar.')
-            return redirect('home:login')
-        contenido = request.POST.get('contenido', '').strip()[:3000]
-        if contenido:
-            # Se publica solo; si tiene lenguaje ofensivo o enlaces queda pendiente de revisión
-            motivo = motivo_revision(contenido)
-            Comentario.objects.create(
-                publicacion=publicacion, user=request.user, contenido=contenido,
-                estado=Comentario.ESTADO_PENDIENTE if motivo else Comentario.ESTADO_APROBADO,
-                motivo_revision=motivo,
-            )
-            if motivo:
-                logger.info('Comentario retenido para revisión (%s) de %s en la noticia %s', motivo, request.user.username, publicacion.pk)
-                messages.warning(request, 'Tu comentario quedó en revisión: el equipo lo revisará antes de publicarlo. '
-                                          'Recuerda que no se permiten groserías, insultos ni enlaces.')
-            else:
-                messages.success(request, 'Comentario publicado.')
-        return redirect('home:noticia_detalle', pk=publicacion.pk)
 
     recientes = Publicacion.objects.filter(
         estado=Publicacion.ESTADO_PUBLICADO,
@@ -213,6 +196,47 @@ def noticia(request, pk=None):
         'comentarios': comentarios,
         'categorias': categorias,
     })
+
+
+def comentar(request, publicacion):
+    """Guarda un comentario. Con AJAX aparece al instante en la noticia sin recargar."""
+    if not request.user.is_authenticated:
+        messages.error(request, 'Debes iniciar sesión para comentar.')
+        return redirect('home:login')
+
+    contenido = request.POST.get('contenido', '').strip()[:3000]
+    if not contenido:
+        if es_ajax(request):
+            return respuesta_ajax(request, 'Escribe tu comentario antes de enviarlo.', ok=False, campo='contenido')
+        return redirect('home:noticia_detalle', pk=publicacion.pk)
+
+    # Se publica solo; si tiene lenguaje ofensivo o enlaces queda pendiente de revisión
+    motivo = motivo_revision(contenido)
+    comentario = Comentario.objects.create(
+        publicacion=publicacion, user=request.user, contenido=contenido,
+        estado=Comentario.ESTADO_PENDIENTE if motivo else Comentario.ESTADO_APROBADO,
+        motivo_revision=motivo,
+    )
+
+    if motivo:
+        logger.info('Comentario retenido para revisión (%s) de %s en la noticia %s', motivo, request.user.username, publicacion.pk)
+        mensaje = ('Tu comentario quedó en revisión: el equipo lo revisará antes de publicarlo. '
+                   'Recuerda que no se permiten groserías, insultos ni enlaces.')
+        if es_ajax(request):
+            return respuesta_ajax(request, mensaje, tipo='aviso')
+        messages.warning(request, mensaje)
+    else:
+        mensaje = 'Comentario publicado.'
+        if es_ajax(request):
+            total = publicacion.comentarios.filter(estado=Comentario.ESTADO_APROBADO).count()
+            return respuesta_ajax(
+                request, mensaje,
+                anteponer={'#lista-comentarios-publicos': html(request, 'home/parciales/comentario_publico.html', {'comentario': comentario})},
+                quitar=['#sin-comentarios'],
+                textos={'#total-comentarios': str(total)},
+            )
+        messages.success(request, mensaje)
+    return redirect('home:noticia_detalle', pk=publicacion.pk)
 
 
 def sign_up(request):

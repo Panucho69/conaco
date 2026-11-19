@@ -94,35 +94,22 @@
             <!-- Comentarios -->
             <section id="blog-comments" class="blog-comments section">
                 <div class="container">
-                    <h4 class="comments-count">Comentarios</h4>
+                    <h4 class="comments-count">Comentarios (<span id="total-comentarios">{{ comentarios|length }}</span>)</h4>
 
-                    {% for comentario in comentarios %}
-                    <div class="comment">
-                        <div class="d-flex">
-                            <div class="comment-img">
-                                {% if comentario.user.perfil.foto_perfil %}
-                                <img src="{{ comentario.user.perfil.foto_perfil.display_url }}" alt="">
-                                {% else %}
-                                <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
-                                {% endif %}
-                            </div>
-                            <div>
-                                <h5>{{ comentario.user.username }}</h5>
-                                <time datetime="{{ comentario.createdat|date:'c' }}">{{ comentario.createdat|date:"d M Y H:i" }}</time>
-                                <p>{{ comentario.contenido }}</p>
-                            </div>
-                        </div>
+                    <div id="lista-comentarios-publicos">
+                        {% for comentario in comentarios %}
+                        {% include 'home/parciales/comentario_publico.html' %}
+                        {% empty %}
+                        <p id="sin-comentarios">Todavía no hay comentarios. ¡Sé el primero!</p>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <p>No hay comentarios aprobados todavía.</p>
-                    {% endfor %}
                 </div>
             </section>
 
             <section id="comment-form" class="comment-form section">
                 <div class="container">
                     {% if request.user.is_authenticated %}
-                    <form method="POST">
+                    <form method="POST" action="{% url 'home:noticia_detalle' publicacion.id %}" data-ajax data-limpiar>
                         {% csrf_token %}
                         <h4>Agregar comentario</h4>
                         <div class="row">

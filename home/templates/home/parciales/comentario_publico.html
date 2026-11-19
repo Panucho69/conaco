@@ -1,0 +1,17 @@
+{% load static %}
+<div class="comment" id="comentario-publico-{{ comentario.id }}">
+    <div class="d-flex">
+        <div class="comment-img">
+            {% if comentario.user.perfil.foto_perfil %}
+            <img src="{{ comentario.user.perfil.foto_perfil.display_url }}" alt="">
+            {% else %}
+            <img src="{% static 'uploads/profile-default.jpg' %}" alt="">
+            {% endif %}
+        </div>
+        <div>
+            <h5>{{ comentario.user.username }}</h5>
+            <time datetime="{{ comentario.createdat|date:'c' }}">{{ comentario.createdat|date:"d M Y H:i" }}</time>
+            <p>{{ comentario.contenido }}</p>
+        </div>
+    </div>
+</div>
